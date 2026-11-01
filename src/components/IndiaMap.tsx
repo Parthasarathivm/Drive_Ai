@@ -125,7 +125,7 @@ const INDIA_GEO_DATA: GeoStateDef[] = [
 
 export function IndiaMap() {
   const router = useRouter();
-  const { state: activeGlobalState, setState: setGlobalState } = useApp();
+  const { state: activeGlobalState, setState: setGlobalState, t } = useApp();
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
   const [selectedCode, setSelectedCode] = useState<string | null>("TN");
   const [searchQuery, setSearchQuery] = useState("");
@@ -190,10 +190,10 @@ export function IndiaMap() {
             <span>3D Interactive Jurisdictional Engine</span>
           </div>
           <h2 className="mt-2 text-xl sm:text-2xl font-black tracking-tight text-white">
-            India Sovereign Statutory Territory
+            {t("indiaMap.title", "Interactive 3D India Mobility & Legal Map")}
           </h2>
           <p className="text-xs sm:text-sm text-slate-300">
-            All 28 States & 8 Union Territories with verified legal amendments and RTO rules.
+            {t("indiaMap.subtitle", "Explore motor vehicle rules, state RTO guidelines, protected zones, and compliance rates across 36 States and Union Territories.")}
           </p>
         </div>
 
@@ -209,7 +209,7 @@ export function IndiaMap() {
                 setSearchQuery(e.target.value);
                 if (matchedStateCode) setSelectedCode(matchedStateCode);
               }}
-              placeholder="Search State, UT, or City (e.g. Mumbai, Delhi, Kochi)…"
+              placeholder={t("indiaMap.searchPlaceholder", "Search State, UT, or City (e.g. Mumbai, Delhi, Kochi)…")}
               className="w-64 sm:w-80 rounded-xl border border-cyan-500/30 bg-[#0c1529]/90 pl-9 pr-3 py-2 text-xs font-medium text-white placeholder-slate-400 focus:border-cyan-400 focus:outline-none backdrop-blur-md shadow-inner"
             />
           </div>
@@ -477,21 +477,21 @@ export function IndiaMap() {
                   className="w-full font-bold shadow-md"
                 >
                   <Scale className="h-4 w-4 mr-2" />
-                  <span>Explore {activeState.name} Driving Laws</span>
+                  <span>{t("indiaMap.viewStateLaws", "View State Driving Laws")} ({activeState.name})</span>
                 </Button>
                 <Button
                   variant="secondary"
                   onClick={() => router.push(`/fines?state=${activeState.code}`)}
                   className="w-full font-semibold"
                 >
-                  <span>Calculate State Fines</span>
+                  <span>{t("fines.title", "Motor Vehicles Act Fine Calculator")}</span>
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
             </>
           ) : (
             <div className="py-12 text-center text-sm text-muted">
-              Select or hover over any State or Union Territory on the 3D map.
+              {t("indiaMap.clickStateHint", "Click any state or dot to inspect legal requirements")}
             </div>
           )}
         </div>

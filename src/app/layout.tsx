@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import VoiceAssistant from "@/components/VoiceAssistant";
 
 export const metadata: Metadata = {
   title: "DriveLegal AI — India's driving, transport & traffic-law platform",
@@ -16,7 +17,7 @@ const FONT_URL =
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Navbar />
           <div id="main">{children}</div>
           <Footer />
+          <VoiceAssistant />
         </Providers>
       </body>
     </html>

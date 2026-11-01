@@ -85,6 +85,48 @@ export function handle<C = { params: Promise<Record<string, string>> }>(fn: Hand
           400
         );
       }
+      const cause = e instanceof Error && "cause" in e ? (e as { cause?: unknown }).cause : null;
+      const causeMsg = cause instanceof Error ? cause.message : String(cause ?? "");
+      const causeCode = typeof cause === "object" && cause !== null && "code" in cause ? (cause as { code: string }).code : "";
+      const fullErrStr = `${e instanceof Error ? e.message : String(e)} ${causeMsg} ${causeCode}`;
+
+      const isDbConnError =
+        fullErrStr.includes("ENOTFOUND") ||
+        fullErrStr.includes("ECONNREFUSED") ||
+        fullErrStr.includes("ETIMEDOUT") ||
+        fullErrStr.includes("timeout") ||
+        fullErrStr.includes("Connection terminated") ||
+        fullErrStr.includes("Cannot use a pool") ||
+        fullErrStr.includes("connect") ||
+        causeCode === "ECONNREFUSED" ||
+        causeCode === "ENOTFOUND" ||
+        causeCode === "ETIMEDOUT";
+
+      if (isDbConnError) {
+        console.error("[Database Connection Error]:", fullErrStr);
+        return json(
+          {
+            success: false,
+            message: "Database service temporarily unavailable. Please try again shortly.",
+            error: "Database service temporarily unavailable. Please try again shortly.",
+            code: "DATABASE_UNAVAILABLE",
+          },
+          503
+        );
+      }
+
+      if (typeof e === "object" && e !== null && "code" in e && (e as { code: string }).code === "23505") {
+        return json(
+          {
+            success: false,
+            message: "A record with this identifier already exists.",
+            error: "A record with this identifier already exists.",
+            code: "CONFLICT",
+          },
+          409
+        );
+      }
+
       console.error("[API Server Exception]:", e);
       return json(
         {

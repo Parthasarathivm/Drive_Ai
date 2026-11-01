@@ -31,7 +31,7 @@ type Ctx = {
   state: string; setState: (s: string) => void;
   vehicle: string; setVehicle: (v: string) => void;
   theme: ThemeId; setTheme: (t: ThemeId | "light" | "dark") => void;
-  t: (k: UiKey) => string;
+  t: (k: UiKey | string, defaultText?: string) => string;
   translationsReviewed: boolean;
   user: AppUser | null; userLoading: boolean; refreshUser: () => Promise<void>;
   toast: (message: string, type?: Toast["type"]) => void;
@@ -131,7 +131,7 @@ export function Providers({ children }: { children: ReactNode }) {
   }, []);
 
   const dict = useMemo(() => ({ ...builtInDict(lang), ...(overrides.lang === lang ? overrides.values : {}) }), [lang, overrides]);
-  const t = useCallback((k: UiKey) => dict[k] ?? k, [dict]);
+  const t = useCallback((k: UiKey | string, defaultText?: string) => dict[k] ?? defaultText ?? k, [dict]);
   const hasRole = useCallback((...r: Role[]) => !!user && (user.roles.includes("super_admin") || r.some((x) => user.roles.includes(x))), [user]);
 
   const value: Ctx = {

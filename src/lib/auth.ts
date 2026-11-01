@@ -29,22 +29,31 @@ export async function createSession(userId: number) {
   const token = crypto.randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + SESSION_DAYS * 86400_000);
   await db.insert(sessions).values({ tokenHash: sha256(token), userId, expiresAt });
-  const jar = await cookies();
-  jar.set(COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: false, // set true behind HTTPS-only deployments via SESSION_COOKIE_SECURE=true
-    path: "/",
-    expires: expiresAt,
-    ...(process.env.SESSION_COOKIE_SECURE === "true" ? { secure: true } : {}),
-  });
+  try {
+    const jar = await cookies();
+    jar.set(COOKIE, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false, // set true behind HTTPS-only deployments via SESSION_COOKIE_SECURE=true
+      path: "/",
+      expires: expiresAt,
+      ...(process.env.SESSION_COOKIE_SECURE === "true" ? { secure: true } : {}),
+    });
+  } catch (err: unknown) {
+    // Next.js request store is not present in non-request environments (e.g. test scripts)
+    console.warn("[Session Cookie skipped - outside Next.js request store]:", err instanceof Error ? err.message : String(err));
+  }
 }
 
 export async function destroySession() {
-  const jar = await cookies();
-  const token = jar.get(COOKIE)?.value;
-  if (token) await db.delete(sessions).where(eq(sessions.tokenHash, sha256(token)));
-  jar.delete(COOKIE);
+  try {
+    const jar = await cookies();
+    const token = jar.get(COOKIE)?.value;
+    if (token) await db.delete(sessions).where(eq(sessions.tokenHash, sha256(token)));
+    jar.delete(COOKIE);
+  } catch (err: unknown) {
+    console.warn("[destroySession skipped - outside Next.js request store]:", err instanceof Error ? err.message : String(err));
+  }
 }
 
 export type SessionUser = {
@@ -59,8 +68,13 @@ export type SessionUser = {
 };
 
 export async function getSessionUser(): Promise<SessionUser | null> {
-  const jar = await cookies();
-  const token = jar.get(COOKIE)?.value;
+  let token: string | undefined;
+  try {
+    const jar = await cookies();
+    token = jar.get(COOKIE)?.value;
+  } catch {
+    return null;
+  }
   if (!token) return null;
   const rows = await db
     .select({ u: users })

@@ -235,16 +235,16 @@ export default function Home() {
             <div className="mt-6 flex flex-wrap items-center gap-3 pointer-events-auto">
               <LinkButton href="/laws" size="lg" variant="glow" className="font-bold">
                 <Scale className="h-4 w-4" />
-                <span>Explore Driving Laws</span>
+                <span>{t("hero.exploreLaws", "Explore Driving Laws")}</span>
                 <ArrowRight className="h-4 w-4" />
               </LinkButton>
               <LinkButton href="/compliance" size="lg" variant="secondary" className="!bg-[#0C1529]/80 !text-white !border-cyan-500/30 backdrop-blur-md hover:!bg-[#111E35] font-semibold">
                 <FileCheck className="h-4 w-4 text-cyan-400" />
-                <span>Check Vehicle Compliance</span>
+                <span>{t("hero.checkVehicle", "Check Vehicle Compliance")}</span>
               </LinkButton>
               <LinkButton href="#india-map" size="lg" variant="secondary" className="!bg-[#0C1529]/80 !text-white !border-cyan-500/30 backdrop-blur-md hover:!bg-[#111E35] font-semibold">
                 <MapPin className="h-4 w-4 text-cyan-400" />
-                <span>Explore India Map</span>
+                <span>{t("hero.exploreMap", "Explore India Map")}</span>
               </LinkButton>
             </div>
 
@@ -256,8 +256,8 @@ export default function Home() {
                 <p className="text-[11px] text-slate-300">Central & state amendments</p>
               </div>
               <div className="dl-glass rounded-xl p-3 border-cyan-500/20 backdrop-blur-md">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">Statutory Grounding</p>
-                <p className="text-sm font-bold text-white mt-0.5">Zero Hallucinations</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">{t("hero.statutoryTruth", "100% Statutory Truth")}</p>
+                <p className="text-sm font-bold text-white mt-0.5">{t("hero.zeroHallucination", "Zero AI Hallucination")}</p>
                 <p className="text-[11px] text-slate-300">Verified official gazette sources</p>
               </div>
               <div className="dl-glass rounded-xl p-3 border-cyan-500/20 backdrop-blur-md">
@@ -281,14 +281,14 @@ export default function Home() {
                   <input
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
-                    placeholder="Search any law, fine, permit, forest entry rule, or transport procedure…"
+                    placeholder={t("hero.search", "Search a law, fine or service…")}
                     aria-label="Search DriveLegal AI"
                     className="w-full rounded-2xl border border-line bg-surface px-4 py-3 pl-11 text-sm font-medium text-fg shadow-inner placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 transition"
                   />
                 </div>
                 <Button type="submit" variant="primary" size="lg" className="font-bold shadow-md">
                   <Search className="h-4 w-4" />
-                  <span>Search Laws</span>
+                  <span>{t("common.search", "Search")}</span>
                 </Button>
                 <Button
                   type="button"
@@ -298,14 +298,14 @@ export default function Home() {
                   className="font-bold shadow-md"
                 >
                   <Bot className="h-4 w-4" />
-                  <span>Ask AI</span>
+                  <span>{t("hero.askAi", "Ask AI")}</span>
                 </Button>
               </div>
 
               {/* Multi-facet Filter Selectors */}
               <div className="mt-4 grid gap-3 sm:grid-cols-3 border-t border-line/60 pt-4">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-muted">Filter by State / UT</label>
+                  <label className="mb-1 block text-xs font-semibold text-muted">{t("common.state", "State / UT")}</label>
                   <Combobox
                     options={STATE_OPTIONS(t("common.allStates"))}
                     value={state}

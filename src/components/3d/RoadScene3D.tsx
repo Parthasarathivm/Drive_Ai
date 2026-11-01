@@ -405,12 +405,13 @@ export default function RoadScene3D({ className }: RoadScene3DProps) {
 
     // Animation Loop
     let animId: number;
-    let clock = new THREE.Clock();
+    const timer = new THREE.Timer();
 
-    const animate = () => {
+    const animate = (timestamp?: number) => {
       animId = requestAnimationFrame(animate);
-      const delta = clock.getDelta();
-      const time = clock.getElapsedTime();
+      timer.update(timestamp);
+      const delta = timer.getDelta();
+      const time = timer.getElapsed();
 
       if (!prefersReducedMotion) {
         // Scroll Chevron markings toward camera (energy transfer effect)
@@ -459,6 +460,7 @@ export default function RoadScene3D({ className }: RoadScene3DProps) {
 
     return () => {
       cancelAnimationFrame(animId);
+      timer.dispose();
       window.removeEventListener("resize", handleResize);
       container.removeEventListener("mousemove", handleMouseMove);
       if (renderer.domElement.parentElement) {
