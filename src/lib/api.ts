@@ -4,9 +4,11 @@ import { ensureSeeded } from "@/lib/seed";
 
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
+  code?: string;
+  constructor(status: number, message: string, code?: string) {
     super(message);
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -60,12 +62,39 @@ export function handle<C = { params: Promise<Record<string, string>> }>(fn: Hand
       const out = await fn(req, ctx);
       return out instanceof Response ? out : json(out);
     } catch (e) {
-      if (e instanceof ApiError) return json({ error: e.message }, e.status);
-      if (e instanceof ZodError) {
-        return json({ error: "Validation failed", issues: e.issues.map((i) => ({ path: i.path.join("."), message: i.message })) }, 400);
+      if (e instanceof ApiError) {
+        return json(
+          {
+            success: false,
+            message: e.message,
+            error: e.message,
+            code: e.code ?? (e.status === 404 ? "NOT_FOUND" : e.status === 401 ? "UNAUTHORIZED" : e.status === 403 ? "FORBIDDEN" : "API_ERROR"),
+          },
+          e.status
+        );
       }
-      console.error("[api error]", e);
-      return json({ error: "Internal server error. Please try again." }, 500);
+      if (e instanceof ZodError) {
+        return json(
+          {
+            success: false,
+            message: "Validation failed",
+            error: "Validation failed",
+            code: "VALIDATION_FAILED",
+            issues: e.issues.map((i) => ({ path: i.path.join("."), message: i.message })),
+          },
+          400
+        );
+      }
+      console.error("[API Server Exception]:", e);
+      return json(
+        {
+          success: false,
+          message: "Internal server error. Please try again.",
+          error: "Internal server error. Please try again.",
+          code: "INTERNAL_SERVER_ERROR",
+        },
+        500
+      );
     }
   };
 }

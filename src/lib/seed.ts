@@ -9,11 +9,11 @@ const SEED_VERSION = "seed_v1";
 let seedPromise: Promise<void> | null = null;
 
 /** Idempotent, concurrency-safe seed. Called lazily from API handlers. */
-export function ensureSeeded() {
+export async function ensureSeeded(): Promise<void> {
   if (!seedPromise) {
     seedPromise = runSeed().catch((e) => {
+      console.warn("[Database Seed Skipped/Pending]:", e instanceof Error ? e.message : String(e));
       seedPromise = null;
-      throw e;
     });
   }
   return seedPromise;

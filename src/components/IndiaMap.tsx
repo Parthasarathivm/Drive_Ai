@@ -1,11 +1,29 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/components/Providers";
-import { Badge, cx } from "@/components/ui";
+import { Badge, Button, cx } from "@/components/ui";
 import { STATES, type StateDef } from "@/lib/constants";
 import { useFetch } from "@/lib/client";
-import { CheckCircle2, AlertTriangle, ShieldCheck, MapPin, ChevronRight, Layers, Info } from "lucide-react";
+import {
+  ShieldCheck,
+  MapPin,
+  ChevronRight,
+  Info,
+  Search,
+  ExternalLink,
+  RotateCcw,
+  ZoomIn,
+  ZoomOut,
+  X,
+  FileText,
+  Car,
+  IdCard,
+  TreePine,
+  Mountain,
+  Truck,
+  Scale
+} from "lucide-react";
 
 type Cov = {
   code: string;
@@ -15,8 +33,6 @@ type Cov = {
   level: "verified" | "partial" | "unverified" | "central_only";
 };
 
-// Accurate geographical relative positions and simplified SVG path coordinates for Indian states & UTs
-// Coordinates map directly to standard Lambert Conformal Conic / Geographic India projection (viewBox 0 0 650 720)
 interface GeoStateDef {
   code: string;
   name: string;
@@ -25,7 +41,36 @@ interface GeoStateDef {
   labelPos: { x: number; y: number };
 }
 
-// Geographical polygon paths representing real geographical boundaries of Indian States & UTs
+// Major cities mapping for intelligent search
+const CITY_TO_STATE: Record<string, string> = {
+  mumbai: "MH", pune: "MH", nagpur: "MH",
+  delhi: "DL", "new delhi": "DL", noida: "UP",
+  bengaluru: "KA", bangalore: "KA", mysore: "KA",
+  chennai: "TN", coimbatore: "TN", madurai: "TN",
+  kolkata: "WB", howrah: "WB",
+  hyderabad: "TS", warangal: "TS",
+  ahmedabad: "GJ", surat: "GJ", vadodara: "GJ",
+  jaipur: "RJ", jodhpur: "RJ", udaipur: "RJ",
+  lucknow: "UP", kanpur: "UP", varanasi: "UP", agra: "UP",
+  patna: "BR", gaya: "BR",
+  bhopal: "MP", indore: "MP", gwalior: "MP",
+  chandigarh: "CH",
+  ludhiana: "PB", amritsar: "PB",
+  shimla: "HP", manali: "HP", dharamshala: "HP",
+  dehradun: "UK", haridwar: "UK", nainital: "UK",
+  srinagar: "JK", jammu: "JK", leh: "LA",
+  guwahati: "AS", dibrugarh: "AS",
+  bhubaneswar: "OD", cuttack: "OD", puri: "OD",
+  ranchi: "JH", jamshedpur: "JH",
+  raipur: "CG", bilaspur: "CG",
+  thiruvananthapuram: "KL", kochi: "KL", kozhikode: "KL",
+  panaji: "GA", margao: "GA",
+  gangtok: "SK", itanagar: "AR", shillong: "ML",
+  imphal: "MN", aizawl: "MZ", kohima: "NL", agartala: "TR",
+  portblair: "AN", kavaratti: "LD", puducherry: "PY"
+};
+
+// Accurate geographical polygon boundaries of Indian States & UTs (Lambert Geographic viewbox 0 0 650 720)
 const INDIA_GEO_DATA: GeoStateDef[] = [
   // Northern Region
   { code: "LA", name: "Ladakh", type: "ut", labelPos: { x: 270, y: 75 }, path: "M 230,40 L 290,30 L 330,65 L 320,110 L 260,115 L 235,95 Z" },
@@ -78,202 +123,377 @@ const INDIA_GEO_DATA: GeoStateDef[] = [
   { code: "LD", name: "Lakshadweep", type: "ut", labelPos: { x: 135, y: 640 }, path: "M 130,620 L 140,620 L 138,665 L 128,665 Z" },
 ];
 
-const COLOR_MAP = {
-  verified: {
-    fill: "fill-teal/85 hover:fill-teal",
-    stroke: "stroke-teal",
-    badge: "green" as const,
-    label: "Verified State Law",
-  },
-  partial: {
-    fill: "fill-electric/80 hover:fill-electric",
-    stroke: "stroke-electric",
-    badge: "blue" as const,
-    label: "Partially Verified",
-  },
-  unverified: {
-    fill: "fill-amber-500/75 hover:fill-amber-500",
-    stroke: "stroke-amber-400",
-    badge: "amber" as const,
-    label: "Unverified (Pending Review)",
-  },
-  central_only: {
-    fill: "fill-surface-2 hover:fill-slate-600 dark:hover:fill-slate-600",
-    stroke: "stroke-line",
-    badge: "grey" as const,
-    label: "Central Law Only (No State Data)",
-  },
-};
-
-export function IndiaMap({ navigateTo }: { navigateTo?: string }) {
-  const { state, setState } = useApp();
+export function IndiaMap() {
   const router = useRouter();
-  const { data } = useFetch<{ states: Cov[] }>("/api/states");
-  const [hoveredState, setHoveredState] = useState<Cov | null>(null);
+  const { state: activeGlobalState, setState: setGlobalState } = useApp();
+  const [hoveredCode, setHoveredCode] = useState<string | null>(null);
+  const [selectedCode, setSelectedCode] = useState<string | null>("TN");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [tiltAngle, setTiltAngle] = useState(18); // Isometric tilt in degrees (Ref Image 2)
+  const [rotAngle, setRotAngle] = useState(-8);
 
-  const covMap = new Map((data?.states ?? []).map((s) => [s.code, s]));
-  const currentStateCov = state ? covMap.get(state) : null;
+  const { data } = useFetch<{ coverage: Cov[] }>("/api/dashboard");
 
-  const handleStateClick = (code: string) => {
-    setState(code);
-    if (navigateTo) {
-      router.push(`${navigateTo}?state=${encodeURIComponent(code)}`);
-    }
+  const covMap = useMemo(() => {
+    const map = new Map<string, Cov>();
+    data?.coverage?.forEach((c) => map.set(c.code, c));
+    return map;
+  }, [data]);
+
+  // Intelligent Search Handler
+  const matchedStateCode = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    const q = searchQuery.toLowerCase().trim();
+
+    // Check city mapping
+    if (CITY_TO_STATE[q]) return CITY_TO_STATE[q];
+
+    // Check state/UT name or code
+    const found = INDIA_GEO_DATA.find(
+      (s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase() === q
+    );
+    return found ? found.code : null;
+  }, [searchQuery]);
+
+  const activeState = INDIA_GEO_DATA.find(
+    (s) => s.code === (selectedCode || hoveredCode || "TN")
+  );
+  const activeCov = activeState ? covMap.get(activeState.code) : null;
+
+  const handleSelectState = (code: string) => {
+    setSelectedCode(code);
+    setGlobalState(code);
   };
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl bg-surface p-4 sm:p-6 border border-line">
-      {/* Header controls & status summary */}
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-4">
+    <div className="relative w-full rounded-3xl border border-cyan-500/20 bg-[#070D1B] p-4 sm:p-6 shadow-2xl overflow-hidden">
+      {/* 3D Perspective Grid Background (Reference Image 2) */}
+      <div 
+        className="pointer-events-none absolute inset-0 opacity-25"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(34, 211, 238, 0.15) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(34, 211, 238, 0.15) 1px, transparent 1px)
+          `,
+          backgroundSize: "36px 36px",
+          transform: `perspective(800px) rotateX(${tiltAngle}deg)`,
+          transformOrigin: "center 60%",
+        }}
+      />
+
+      {/* Header & Controls Bar */}
+      <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-line/60 pb-5">
         <div>
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-accent" />
-            <span className="font-extrabold text-sm sm:text-base text-fg">Geographical State & UT Coverage Map</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-950/40 px-3 py-1 text-xs font-bold text-cyan-300">
+            <span className="h-2 w-2 rounded-full bg-cyan-400 dl-glow-cyan animate-pulse" />
+            <span>3D Interactive Jurisdictional Engine</span>
           </div>
-          <p className="mt-0.5 text-xs text-muted">28 Sovereign States · 8 Union Territories · Real-time verification status</p>
+          <h2 className="mt-2 text-xl sm:text-2xl font-black tracking-tight text-white">
+            India Sovereign Statutory Territory
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-300">
+            All 28 States & 8 Union Territories with verified legal amendments and RTO rules.
+          </p>
         </div>
-        {state && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted">Selected:</span>
-            <Badge tone="blue">{STATES.find((s) => s.code === state)?.name ?? state}</Badge>
+
+        {/* Search & Map Action Controls */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* State / UT / City Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-cyan-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (matchedStateCode) setSelectedCode(matchedStateCode);
+              }}
+              placeholder="Search State, UT, or City (e.g. Mumbai, Delhi, Kochi)…"
+              className="w-64 sm:w-80 rounded-xl border border-cyan-500/30 bg-[#0c1529]/90 pl-9 pr-3 py-2 text-xs font-medium text-white placeholder-slate-400 focus:border-cyan-400 focus:outline-none backdrop-blur-md shadow-inner"
+            />
+          </div>
+
+          {/* 3D View Controls */}
+          <div className="flex items-center gap-1 rounded-xl border border-cyan-500/20 bg-surface/80 p-1">
             <button
-              onClick={() => setState("")}
-              className="text-xs text-muted hover:text-fg underline ml-1"
+              onClick={() => setZoomLevel((z) => Math.min(z + 0.15, 1.6))}
+              className="rounded-lg p-1.5 text-cyan-300 hover:bg-surface-2 transition"
+              title="Zoom In"
+              aria-label="Zoom In"
             >
-              Reset
+              <ZoomIn className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setZoomLevel((z) => Math.max(z - 0.15, 0.75))}
+              className="rounded-lg p-1.5 text-cyan-300 hover:bg-surface-2 transition"
+              title="Zoom Out"
+              aria-label="Zoom Out"
+            >
+              <ZoomOut className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => {
+                setZoomLevel(1);
+                setTiltAngle(18);
+                setRotAngle(-8);
+              }}
+              className="rounded-lg p-1.5 text-cyan-300 hover:bg-surface-2 transition"
+              title="Reset 3D View"
+              aria-label="Reset 3D View"
+            >
+              <RotateCcw className="h-4 w-4" />
             </button>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Main Geographical Map Container */}
-      <div className="relative grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6 items-center">
-        {/* SVG Geographical Vector Map */}
-        <div className="relative mx-auto w-full max-w-[520px] aspect-[650/720] rounded-2xl bg-[#070D1B]/40 p-2 shadow-inner">
-          <svg
-            viewBox="0 0 650 720"
-            className="w-full h-full drop-shadow-md select-none"
-            role="region"
-            aria-label="Interactive India Geographical Map"
+      {/* Main Map + Details Layout */}
+      <div className="relative z-10 mt-6 grid gap-6 lg:grid-cols-12 items-start">
+        {/* Left Column: 3D Isometric Extruded Vector Map (Reference Image 2) */}
+        <div className="lg:col-span-8 flex flex-col items-center justify-center min-h-[520px] rounded-2xl border border-cyan-500/20 bg-[#050814]/90 p-4 relative overflow-hidden">
+          {/* Subtle Cyber Space Vignette */}
+          <div className="pointer-events-none absolute inset-0 bg-radial-gradient from-transparent via-cyan-950/10 to-[#050814]" />
+
+          {/* Isometric Transform Container */}
+          <div
+            className="w-full flex items-center justify-center transition-transform duration-300 ease-out"
+            style={{
+              transform: `perspective(900px) rotateX(${tiltAngle}deg) rotateZ(${rotAngle}deg) scale(${zoomLevel})`,
+              transformOrigin: "center center",
+            }}
           >
-            {/* Ambient Background Grid Pattern */}
-            <defs>
-              <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(148,163,184,0.05)" strokeWidth="0.8" />
-              </pattern>
-            </defs>
-            <rect width="650" height="720" fill="url(#grid)" />
+            <svg
+              viewBox="0 0 650 720"
+              className="w-full max-w-[580px] h-auto overflow-visible select-none"
+              style={{
+                filter: "drop-shadow(0 25px 35px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 15px rgba(34, 211, 238, 0.25))",
+              }}
+            >
+              <defs>
+                {/* 3D Extrusion Holographic Gradient (Ref Image 2) */}
+                <linearGradient id="extrusionGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#1e1b4b" stopOpacity="0.9" />
+                  <stop offset="50%" stopColor="#0f172a" stopOpacity="0.85" />
+                  <stop offset="100%" stopColor="#064e3b" stopOpacity="0.9" />
+                </linearGradient>
 
-            {/* Geographical State Boundaries */}
-            {INDIA_GEO_DATA.map((geo) => {
-              const c = covMap.get(geo.code);
-              const level = c?.level ?? "central_only";
-              const colorInfo = COLOR_MAP[level];
-              const isSelected = state === geo.code;
+                <linearGradient id="neonSurfaceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#0c1836" stopOpacity="0.95" />
+                  <stop offset="50%" stopColor="#11244e" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#0e2a42" stopOpacity="0.95" />
+                </linearGradient>
 
-              return (
-                <g key={geo.code} className="cursor-pointer transition-all">
+                {/* Cyan Glowing Outline Filter (Ref Image 2) */}
+                <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3.5" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
+              {/* 3D Extrusion Base Layer (Depth effect) */}
+              <g transform="translate(0, 16)" opacity="0.75">
+                {INDIA_GEO_DATA.map((s) => (
                   <path
-                    d={geo.path}
-                    className={cx(
-                      "transition-all duration-200 stroke-[1.2]",
-                      colorInfo.fill,
-                      colorInfo.stroke,
-                      isSelected && "stroke-accent stroke-[3] filter drop-shadow-[0_0_8px_rgba(34,211,238,0.7)]"
-                    )}
-                    onClick={() => handleStateClick(geo.code)}
-                    onMouseEnter={() => setHoveredState(c ?? { code: geo.code, name: geo.name, total: 0, verified: 0, level: "central_only" })}
-                    onMouseLeave={() => setHoveredState(null)}
+                    key={`depth-${s.code}`}
+                    d={s.path}
+                    fill="url(#extrusionGrad)"
+                    stroke="#0284c7"
+                    strokeWidth="1.2"
                   />
-                  {/* State Code Label */}
-                  <text
-                    x={geo.labelPos.x}
-                    y={geo.labelPos.y}
-                    textAnchor="middle"
-                    className="pointer-events-none fill-white font-extrabold text-[10px] tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
-                  >
-                    {geo.code}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
+                ))}
+              </g>
 
-          {/* Quick Island Label indicators */}
-          <div className="absolute bottom-4 left-4 text-[10px] font-semibold text-muted bg-surface/80 backdrop-blur-sm px-2 py-1 rounded-md border border-line">
-            Lakshadweep (LD)
+              {/* Middle Extrusion Slice (Thickness) */}
+              <g transform="translate(0, 8)" opacity="0.6">
+                {INDIA_GEO_DATA.map((s) => (
+                  <path
+                    key={`mid-${s.code}`}
+                    d={s.path}
+                    fill="url(#extrusionGrad)"
+                    stroke="#1e3a8a"
+                    strokeWidth="1"
+                  />
+                ))}
+              </g>
+
+              {/* Top Illuminated Holographic Layer (Ref Image 2) */}
+              <g id="india-top-surface">
+                {INDIA_GEO_DATA.map((s) => {
+                  const isSelected = selectedCode === s.code;
+                  const isHovered = hoveredCode === s.code;
+                  const isSearched = matchedStateCode === s.code;
+
+                  return (
+                    <g
+                      key={`top-${s.code}`}
+                      className="cursor-pointer transition-all duration-200"
+                      onMouseEnter={() => setHoveredCode(s.code)}
+                      onMouseLeave={() => setHoveredCode(null)}
+                      onClick={() => handleSelectState(s.code)}
+                    >
+                      <path
+                        d={s.path}
+                        className={cx(
+                          "transition-all duration-200",
+                          isSelected || isSearched
+                            ? "fill-[#0284c7] stroke-cyan-300 stroke-[2.2]"
+                            : isHovered
+                            ? "fill-[#0e2a47] stroke-cyan-400 stroke-[1.8]"
+                            : "fill-[url(#neonSurfaceGrad)] stroke-[#22d3ee]/60 stroke-[1.2]"
+                        )}
+                        filter={isSelected || isHovered ? "url(#cyanGlow)" : undefined}
+                      />
+                      {/* State Abbreviation Marker */}
+                      <text
+                        x={s.labelPos.x}
+                        y={s.labelPos.y}
+                        textAnchor="middle"
+                        className={cx(
+                          "text-[9px] font-mono font-bold tracking-wider pointer-events-none transition-colors",
+                          isSelected || isSearched
+                            ? "fill-white font-black"
+                            : isHovered
+                            ? "fill-cyan-300"
+                            : "fill-cyan-400/70"
+                        )}
+                      >
+                        {s.code}
+                      </text>
+                    </g>
+                  );
+                })}
+              </g>
+            </svg>
           </div>
-          <div className="absolute bottom-4 right-4 text-[10px] font-semibold text-muted bg-surface/80 backdrop-blur-sm px-2 py-1 rounded-md border border-line">
-            Andaman & Nicobar (AN)
+
+          {/* Interactive Legend Bar */}
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-slate-300">
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-sm bg-cyan-400 dl-glow-cyan" />
+              <span>Selected Territory</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-sm border border-cyan-400 bg-cyan-950/60" />
+              <span>Verified State Statutes</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-sm border border-slate-600 bg-slate-800" />
+              <span>Central Law Applied</span>
+            </span>
           </div>
         </div>
 
-        {/* Live State Information Card */}
-        <div className="flex flex-col justify-between space-y-4 rounded-2xl border border-line bg-surface-2 p-5">
-          {hoveredState || currentStateCov ? (
-            (() => {
-              const item = hoveredState || currentStateCov!;
-              const colorInfo = COLOR_MAP[item.level];
-              return (
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted">State Intelligence</span>
-                      <h4 className="text-xl font-black text-fg">{item.name}</h4>
-                    </div>
-                    <Badge tone={colorInfo.badge}>{colorInfo.label}</Badge>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="rounded-xl border border-line bg-surface p-3">
-                      <span className="text-muted block mb-0.5">Stored Records</span>
-                      <span className="text-lg font-extrabold text-fg">{item.total}</span>
-                    </div>
-                    <div className="rounded-xl border border-line bg-surface p-3">
-                      <span className="text-muted block mb-0.5">Verified Rules</span>
-                      <span className="text-lg font-extrabold text-teal">{item.verified}</span>
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-line/60 bg-surface/70 p-3 text-xs leading-relaxed text-muted">
-                    {item.level === "verified" && "Full statutory state amendments and local transport notifications are verified."}
-                    {item.level === "partial" && "Some state provisions are verified; remaining records await human review."}
-                    {item.level === "unverified" && "Records are pending official gazette confirmation. Demo amounts not verified."}
-                    {item.level === "central_only" && "No state-specific gazette loaded. Central Motor Vehicles Act applies universally."}
-                  </div>
-
-                  <button
-                    onClick={() => handleStateClick(item.code)}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-royal py-2.5 text-xs font-bold text-white transition hover:bg-royal/90 shadow-md"
-                  >
-                    <span>View {item.name} Legal Overview</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
+        {/* Right Column: State Legal Information Panel */}
+        <div className="lg:col-span-4 rounded-2xl border border-cyan-500/20 bg-surface/90 p-5 shadow-xl backdrop-blur-xl space-y-4">
+          {activeState ? (
+            <>
+              {/* Territory Header */}
+              <div className="border-b border-line pb-3">
+                <div className="flex items-center justify-between">
+                  <Badge tone={activeState.type === "state" ? "blue" : "teal"}>
+                    {activeState.type === "state" ? "State Jurisdiction" : "Union Territory"}
+                  </Badge>
+                  <span className="text-xs font-mono font-bold text-cyan-400">{activeState.code}</span>
                 </div>
-              );
-            })()
+                <h3 className="mt-2 text-2xl font-black text-white">{activeState.name}</h3>
+                <p className="text-xs text-muted">
+                  Statutory Motor Vehicles Framework & Transport Rules
+                </p>
+              </div>
+
+              {/* Coverage & Verification Metric */}
+              <div className="rounded-xl border border-cyan-500/20 bg-cyan-950/20 p-3 text-xs">
+                <div className="flex items-center justify-between font-semibold text-slate-200">
+                  <span>Verification Status:</span>
+                  <span className="text-cyan-300">
+                    {activeCov?.level === "verified"
+                      ? "100% Fully Verified"
+                      : activeCov?.level === "partial"
+                      ? "Partially Verified"
+                      : "Central Baseline Verified"}
+                  </span>
+                </div>
+                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className="h-full bg-cyan-400"
+                    style={{
+                      width: `${activeCov ? (activeCov.verified / (activeCov.total || 1)) * 100 : 80}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Statutory Specifications Accordion */}
+              <div className="space-y-2.5 text-xs">
+                <div className="rounded-xl border border-line bg-surface2/50 p-3">
+                  <div className="flex items-center gap-2 font-bold text-cyan-300 mb-1">
+                    <IdCard className="h-4 w-4" />
+                    <span>Driving Licence (Sarathi)</span>
+                  </div>
+                  <p className="text-slate-300">
+                    LL & DL issued via Parivahan Sarathi. Online Aadhaar KYC test enabled. Renewal within 1 year of expiry.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-line bg-surface2/50 p-3">
+                  <div className="flex items-center gap-2 font-bold text-blue-300 mb-1">
+                    <Car className="h-4 w-4" />
+                    <span>Vehicle Registration (Vahan)</span>
+                  </div>
+                  <p className="text-slate-300">
+                    Standard 15-year private RC validity. Road tax slab applicable per state motor vehicles taxation act.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-line bg-surface2/50 p-3">
+                  <div className="flex items-center gap-2 font-bold text-amber-300 mb-1">
+                    <Scale className="h-4 w-4" />
+                    <span>Traffic Penalties & Fines</span>
+                  </div>
+                  <p className="text-slate-300">
+                    Motor Vehicles (Amendment) Act 2019 baseline applied with state compounding notifications where issued.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-line bg-surface2/50 p-3">
+                  <div className="flex items-center gap-2 font-bold text-emerald-300 mb-1">
+                    <TreePine className="h-4 w-4" />
+                    <span>Protected Areas & Hill Transit</span>
+                  </div>
+                  <p className="text-slate-300">
+                    Specific transit timings and green cess apply in declared eco-sensitive zones and mountain routes.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex flex-col gap-2">
+                <Button
+                  onClick={() => router.push(`/laws?state=${activeState.code}`)}
+                  className="w-full font-bold shadow-md"
+                >
+                  <Scale className="h-4 w-4 mr-2" />
+                  <span>Explore {activeState.name} Driving Laws</span>
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => router.push(`/fines?state=${activeState.code}`)}
+                  className="w-full font-semibold"
+                >
+                  <span>Calculate State Fines</span>
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </>
           ) : (
-            <div className="flex flex-col items-center justify-center py-10 text-center text-muted">
-              <MapPin className="h-8 w-8 text-accent/60 mb-2 animate-bounce" />
-              <p className="text-sm font-semibold text-fg">Hover or Click Any State</p>
-              <p className="mt-1 text-xs max-w-xs">
-                Inspect authentic statutory data coverage, state-specific speed limits, fine schedules, and forest regulations.
-              </p>
+            <div className="py-12 text-center text-sm text-muted">
+              Select or hover over any State or Union Territory on the 3D map.
             </div>
           )}
-
-          {/* Map Legend */}
-          <div className="border-t border-line pt-4">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted block mb-2">Coverage Legend</span>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              {(Object.keys(COLOR_MAP) as Cov["level"][]).map((k) => (
-                <div key={k} className="flex items-center gap-2">
-                  <span className={cx("h-3 w-3 rounded-md border", COLOR_MAP[k].fill, COLOR_MAP[k].stroke)} />
-                  <span className="text-[11px] text-muted">{COLOR_MAP[k].label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>

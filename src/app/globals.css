@@ -2,44 +2,144 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --bg: #f8fafc;
-  --bg-secondary: #edf2f7;
-  --surface: #ffffff;
-  --surface-2: #f1f5f9;
-  --surface-3: #e2e8f0;
-  --fg: #070d1b;
-  --fg-secondary: #475569;
-  --muted: #64748b;
-  --line: rgba(148, 163, 184, 0.28);
-  --navy: #0c1529;
-  --royal: #2563eb;
-  --electric: #3b82f6;
-  --accent: #22d3ee;
-  --teal: #14b8a6;
-  --glow: 0 0 25px rgba(37, 99, 235, 0.15);
-  --glass-border: rgba(148, 163, 184, 0.2);
-  --card-shadow: 0 10px 30px -10px rgba(7, 13, 27, 0.08);
-}
+/* =========================================================================
+   5 COMPLETE WEBSITE THEMES:
+   1. Cyber Blue (default) - Dark navy, cyan neon, electric blue, futuristic transportation
+   2. Midnight Purple       - Dark violet, purple neon, magenta, glass panels
+   3. Arctic Light          - Clean white/slate, icy blue, crisp professional government appearance
+   4. Emerald Intelligence  - Deep forest green, emerald neon, teal & subtle gold
+   5. Obsidian Premium      - Pitch black, silver, electric blue & minimal luxury styling
+   ========================================================================= */
 
-.dark {
+:root,
+[data-theme="cyber-blue"] {
   --bg: #070d1b;
   --bg-secondary: #0c1529;
   --surface: #111e35;
-  --surface-2: #182846;
-  --surface-3: #1e3357;
+  --surface-2: #162644;
+  --surface-3: #1d335a;
   --fg: #f8fafc;
-  --fg-secondary: #a7b4cc;
-  --muted: #8292ab;
-  --line: rgba(148, 163, 184, 0.16);
+  --fg-secondary: #94a3b8;
+  --muted: #64748b;
+  --line: rgba(56, 189, 248, 0.18);
   --navy: #070d1b;
   --royal: #2563eb;
-  --electric: #3b82f6;
+  --electric: #38bdf8;
   --accent: #22d3ee;
   --teal: #14b8a6;
-  --glow: 0 0 35px rgba(34, 211, 238, 0.16);
-  --glass-border: rgba(148, 163, 184, 0.16);
+  --glow: 0 0 35px rgba(34, 211, 238, 0.22);
+  --glass-border: rgba(34, 211, 238, 0.2);
+  --glass-bg: rgba(17, 30, 53, 0.75);
   --card-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6);
+  --chart-1: #22d3ee;
+  --chart-2: #3b82f6;
+  --chart-3: #8b5cf6;
+  --chart-4: #14b8a6;
+  --chart-5: #f59e0b;
+}
+
+[data-theme="midnight-purple"] {
+  --bg: #090514;
+  --bg-secondary: #120a24;
+  --surface: #190f33;
+  --surface-2: #231545;
+  --surface-3: #301c5c;
+  --fg: #faf5ff;
+  --fg-secondary: #d8b4fe;
+  --muted: #a855f7;
+  --line: rgba(192, 132, 252, 0.22);
+  --navy: #090514;
+  --royal: #9333ea;
+  --electric: #c084fc;
+  --accent: #e879f9;
+  --teal: #f472b6;
+  --glow: 0 0 35px rgba(232, 121, 249, 0.28);
+  --glass-border: rgba(216, 180, 254, 0.24);
+  --glass-bg: rgba(25, 15, 51, 0.78);
+  --card-shadow: 0 15px 35px -10px rgba(9, 5, 20, 0.7);
+  --chart-1: #e879f9;
+  --chart-2: #a855f7;
+  --chart-3: #38bdf8;
+  --chart-4: #f472b6;
+  --chart-5: #fbbf24;
+}
+
+[data-theme="arctic-light"] {
+  --bg: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --surface: #ffffff;
+  --surface-2: #e2e8f0;
+  --surface-3: #cbd5e1;
+  --fg: #0f172a;
+  --fg-secondary: #334155;
+  --muted: #64748b;
+  --line: rgba(148, 163, 184, 0.38);
+  --navy: #0f172a;
+  --royal: #0284c7;
+  --electric: #0369a1;
+  --accent: #0ea5e9;
+  --teal: #0d9488;
+  --glow: 0 0 20px rgba(2, 132, 199, 0.18);
+  --glass-border: rgba(148, 163, 184, 0.3);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --card-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08);
+  --chart-1: #0284c7;
+  --chart-2: #0ea5e9;
+  --chart-3: #6366f1;
+  --chart-4: #0d9488;
+  --chart-5: #d97706;
+}
+
+[data-theme="emerald-intelligence"] {
+  --bg: #03140e;
+  --bg-secondary: #062219;
+  --surface: #0a2f23;
+  --surface-2: #0f3e30;
+  --surface-3: #165341;
+  --fg: #f0fdf4;
+  --fg-secondary: #86efac;
+  --muted: #4ade80;
+  --line: rgba(52, 211, 153, 0.22);
+  --navy: #03140e;
+  --royal: #059669;
+  --electric: #10b981;
+  --accent: #34d399;
+  --teal: #2dd4bf;
+  --glow: 0 0 35px rgba(52, 211, 153, 0.25);
+  --glass-border: rgba(52, 211, 153, 0.24);
+  --glass-bg: rgba(10, 47, 35, 0.78);
+  --card-shadow: 0 15px 35px -10px rgba(3, 20, 14, 0.7);
+  --chart-1: #34d399;
+  --chart-2: #10b981;
+  --chart-3: #38bdf8;
+  --chart-4: #2dd4bf;
+  --chart-5: #fbbf24;
+}
+
+[data-theme="obsidian-premium"] {
+  --bg: #030406;
+  --bg-secondary: #090c12;
+  --surface: #0f131c;
+  --surface-2: #161c28;
+  --surface-3: #1f2738;
+  --fg: #ffffff;
+  --fg-secondary: #cbd5e1;
+  --muted: #64748b;
+  --line: rgba(255, 255, 255, 0.14);
+  --navy: #030406;
+  --royal: #3b82f6;
+  --electric: #60a5fa;
+  --accent: #93c5fd;
+  --teal: #38bdf8;
+  --glow: 0 0 35px rgba(96, 165, 250, 0.2);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-bg: rgba(15, 19, 28, 0.82);
+  --card-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.85);
+  --chart-1: #60a5fa;
+  --chart-2: #38bdf8;
+  --chart-3: #a78bfa;
+  --chart-4: #4ade80;
+  --chart-5: #f43f5e;
 }
 
 @theme inline {
@@ -64,11 +164,11 @@
 }
 
 html {
-  color-scheme: light;
+  color-scheme: dark;
   scroll-behavior: smooth;
 }
-html.dark {
-  color-scheme: dark;
+html[data-theme="arctic-light"] {
+  color-scheme: light;
 }
 
 body {
@@ -78,75 +178,82 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* Glassmorphic Cyber Panels */
+/* Glassmorphism & Cyber Lighting Utilities */
 .dl-glass {
-  background: rgba(17, 30, 53, 0.72);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   box-shadow: var(--card-shadow);
 }
-.light .dl-glass {
-  background: rgba(255, 255, 255, 0.85);
+
+.dl-glass-interactive {
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--card-shadow);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dl-glass-interactive:hover {
+  border-color: var(--accent);
+  box-shadow: var(--glow), var(--card-shadow);
+  transform: translateY(-2px);
 }
 
 .dl-glow-cyan {
-  box-shadow: 0 0 25px rgba(34, 211, 238, 0.22);
+  box-shadow: 0 0 25px rgba(34, 211, 238, 0.35);
 }
 
 .dl-glow-blue {
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.35);
 }
 
-.dl-glow-teal {
-  box-shadow: 0 0 25px rgba(20, 184, 166, 0.25);
+.dl-glow-purple {
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.35);
 }
 
-@keyframes dl-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-.dl-skeleton {
-  animation: dl-pulse 1.4s ease-in-out infinite;
-  background: var(--surface-2);
-  border-radius: 0.5rem;
+.dl-glow-emerald {
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.35);
 }
 
-@keyframes dl-slide {
-  from { transform: translateY(10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-.dl-toast {
-  animation: dl-slide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+.dl-neon-border {
+  border: 1px solid var(--accent);
+  box-shadow: inset 0 0 15px rgba(34, 211, 238, 0.15), 0 0 15px rgba(34, 211, 238, 0.2);
 }
 
-@keyframes float-gentle {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-}
-.dl-float {
-  animation: float-gentle 4s ease-in-out infinite;
+.dl-grid-bg {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.03);
   }
 }
 
+.dl-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
 @media print {
-  .no-print { display: none !important; }
-  body { background: #fff; color: #000; }
+  body {
+    background: #ffffff !important;
+    color: #070d1b !important;
+  }
+  .no-print {
+    display: none !important;
+  }
 }

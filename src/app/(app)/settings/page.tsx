@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Settings } from "lucide-react";
 import Link from "next/link";
-import { useApp } from "@/components/Providers";
+import { useApp, THEMES } from "@/components/Providers";
 import { Button, Card, Field, Notice, PageHeader, inputCls } from "@/components/ui";
 import { api } from "@/lib/client";
 import { LANGUAGES } from "@/lib/constants";
@@ -21,7 +21,23 @@ export default function SettingsPage() {
       <PageHeader title="Settings" icon={<Settings className="h-5 w-5" />} />
       <div className="grid max-w-3xl gap-4">
         <Card className="space-y-4"><h2 className="font-semibold">Appearance & language</h2>
-          <div className="flex gap-2">{(["light", "dark"] as const).map((t) => <Button key={t} variant={theme === t ? "primary" : "secondary"} onClick={() => setTheme(t)}>{t === "light" ? "Light" : "Dark (navy)"}</Button>)}</div>
+          <div>
+            <p className="text-xs font-semibold uppercase text-muted mb-2">Theme Selection (5 Sovereign Themes)</p>
+            <div className="flex flex-wrap gap-2">
+              {THEMES.map((th) => (
+                <Button
+                  key={th.id}
+                  size="sm"
+                  variant={theme === th.id ? "primary" : "secondary"}
+                  onClick={() => setTheme(th.id)}
+                  className="flex items-center gap-1.5"
+                >
+                  <span className="h-2 w-2 rounded-full border border-white/40" style={{ backgroundColor: th.accent }} />
+                  <span>{th.name}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
           <Field label="Interface language" htmlFor="sl"><select id="sl" className={inputCls} value={lang} onChange={(e) => setLang(e.target.value)}>{LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.nativeName} ({l.name})</option>)}</select></Field>
           {!translationsReviewed && <Notice tone="amber">Interface translations for this language are machine-generated and not yet human-reviewed. Legal text is never machine-translated silently.</Notice>}
         </Card>

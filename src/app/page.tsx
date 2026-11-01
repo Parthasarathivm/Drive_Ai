@@ -218,29 +218,53 @@ export default function Home() {
         {/* Hero Overlay Content */}
         <div className="absolute inset-0 flex flex-col justify-between px-4 py-8 sm:px-6 lg:px-8 pointer-events-none">
           <div className="mx-auto max-w-[1400px] w-full pt-4">
-            <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-accent/30 bg-[#070D1B]/80 px-4 py-1.5 text-xs font-bold text-accent backdrop-blur-md shadow-lg shadow-accent/10">
-              <Sparkles className="h-3.5 w-3.5" />
+            <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-accent/40 bg-[#070D1B]/80 px-4 py-1.5 text-xs font-bold text-accent backdrop-blur-md shadow-lg shadow-accent/15">
+              <Sparkles className="h-3.5 w-3.5 text-cyan-300 animate-pulse" />
               <span>Every Road. Every Rule. Every Service. In Your Language.</span>
             </div>
 
             <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-md">
-              India&apos;s Driving Laws. Services. <span className="bg-gradient-to-r from-electric via-accent to-teal bg-clip-text text-transparent">Legal Intelligence.</span>
+              India&apos;s Intelligent <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-300 bg-clip-text text-transparent">Driving & Legal Assistant</span>
             </h1>
 
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base drop-shadow">
-              One intelligent platform to understand traffic laws, calculate fines, access driving licence services, discover permits and explore transport regulations across India.
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-200 sm:text-base drop-shadow">
+              Explore traffic laws, driving licences, vehicle regulations, permits and road restrictions across India — in your language.
             </p>
 
-            {/* Quick Hero Action CTAs */}
+            {/* Hero Action CTAs (Reference Image 1) */}
             <div className="mt-6 flex flex-wrap items-center gap-3 pointer-events-auto">
-              <LinkButton href="/services" size="lg" variant="glow" className="font-bold">
-                <span>Explore DriveLegal AI</span>
+              <LinkButton href="/laws" size="lg" variant="glow" className="font-bold">
+                <Scale className="h-4 w-4" />
+                <span>Explore Driving Laws</span>
                 <ArrowRight className="h-4 w-4" />
               </LinkButton>
-              <LinkButton href="/assistant" size="lg" variant="secondary" className="!bg-[#0C1529]/80 !text-white !border-line backdrop-blur-md hover:!bg-[#111E35]">
-                <Bot className="h-4 w-4 text-accent" />
-                <span>Ask AI Assistant</span>
+              <LinkButton href="/compliance" size="lg" variant="secondary" className="!bg-[#0C1529]/80 !text-white !border-cyan-500/30 backdrop-blur-md hover:!bg-[#111E35] font-semibold">
+                <FileCheck className="h-4 w-4 text-cyan-400" />
+                <span>Check Vehicle Compliance</span>
               </LinkButton>
+              <LinkButton href="#india-map" size="lg" variant="secondary" className="!bg-[#0C1529]/80 !text-white !border-cyan-500/30 backdrop-blur-md hover:!bg-[#111E35] font-semibold">
+                <MapPin className="h-4 w-4 text-cyan-400" />
+                <span>Explore India Map</span>
+              </LinkButton>
+            </div>
+
+            {/* Floating Glass Information Cards (Ref Image 1) */}
+            <div className="mt-8 hidden sm:grid grid-cols-3 gap-3 max-w-3xl pointer-events-auto">
+              <div className="dl-glass rounded-xl p-3 border-cyan-500/20 backdrop-blur-md">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">Jurisdiction</p>
+                <p className="text-sm font-bold text-white mt-0.5">28 States + 8 UTs</p>
+                <p className="text-[11px] text-slate-300">Central & state amendments</p>
+              </div>
+              <div className="dl-glass rounded-xl p-3 border-cyan-500/20 backdrop-blur-md">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">Statutory Grounding</p>
+                <p className="text-sm font-bold text-white mt-0.5">Zero Hallucinations</p>
+                <p className="text-[11px] text-slate-300">Verified official gazette sources</p>
+              </div>
+              <div className="dl-glass rounded-xl p-3 border-cyan-500/20 backdrop-blur-md">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">Multilingual Access</p>
+                <p className="text-sm font-bold text-white mt-0.5">12 Indian Languages</p>
+                <p className="text-[11px] text-slate-300">Regional scripts & speech synthesis</p>
+              </div>
             </div>
           </div>
         </div>
@@ -430,7 +454,7 @@ export default function Home() {
           </div>
         </div>
 
-        <IndiaMap navigateTo="/laws" />
+        <IndiaMap />
       </section>
 
       {/* SECTION 6: WHY DRIVELEGAL AI? */}
