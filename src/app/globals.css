@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --fg: #0b1b3a;
+  --muted: #55657f;
+  --line: #e2e8f0;
+  --navy: #0a1f44;
+  --royal: #1e4fd8;
+  --accent: #0e90a8;
+}
+
+.dark {
+  --bg: #0a1020;
+  --surface: #121a2c;
+  --surface-2: #17213a;
+  --fg: #e8eefb;
+  --muted: #a0aec8;
+  --line: #26334f;
+  --navy: #0a1f44;
+  --royal: #6c97ff;
+  --accent: #2dd4ee;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-navy: var(--navy);
+  --color-royal: var(--royal);
+  --color-accent: var(--accent);
+  --font-sans: "Noto Sans", "Inter", system-ui, -apple-system, "Segoe UI", "Noto Sans Devanagari", "Noto Sans Tamil", "Noto Sans Telugu",
+    "Noto Sans Malayalam", "Noto Sans Kannada", "Noto Sans Bengali", "Noto Sans Gujarati", "Noto Sans Gurmukhi", "Noto Sans Oriya", sans-serif;
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--royal);
+  outline-offset: 2px;
+}
+
+@keyframes dl-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.dl-skeleton {
+  animation: dl-pulse 1.4s ease-in-out infinite;
+  background: var(--line);
+  border-radius: 0.5rem;
+}
+
+@keyframes dl-slide {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.dl-toast {
+  animation: dl-slide 0.2s ease-out;
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; color: #000; }
+}

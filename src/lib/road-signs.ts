@@ -1,0 +1,38 @@
+// Reference library for manual identification (text only). Categories follow the usual Indian road-sign classes:
+// mandatory/regulatory, prohibitory, cautionary/warning and informatory. Verify against the official Schedule / IRC sign manuals.
+export type SignCategory = "mandatory" | "prohibitory" | "warning" | "informational";
+export const SIGNS: { name: string; category: SignCategory; meaning: string }[] = [
+  { name: "Stop", category: "mandatory", meaning: "Come to a complete halt at the stop line and proceed only when it is safe." },
+  { name: "Give Way", category: "mandatory", meaning: "Slow down and give priority to traffic on the road you are entering." },
+  { name: "Compulsory Turn Left / Right / Ahead", category: "mandatory", meaning: "Vehicles must proceed only in the direction shown by the arrow." },
+  { name: "Compulsory Keep Left", category: "mandatory", meaning: "Keep to the left of the obstruction or island." },
+  { name: "Compulsory Sound Horn", category: "mandatory", meaning: "Sound the horn where visibility is poor, e.g. blind curves on hill roads." },
+  { name: "Speed Limit (number in a red circle)", category: "prohibitory", meaning: "Do not exceed the speed in km/h shown on the sign." },
+  { name: "No Entry", category: "prohibitory", meaning: "Vehicles may not enter this road from this direction." },
+  { name: "One Way", category: "mandatory", meaning: "Traffic moves only in the direction of the arrow." },
+  { name: "No Overtaking", category: "prohibitory", meaning: "Overtaking is not allowed on this stretch." },
+  { name: "No Parking", category: "prohibitory", meaning: "Parking is prohibited; brief stopping may be allowed unless 'No Stopping' is shown." },
+  { name: "No Stopping / No Standing", category: "prohibitory", meaning: "Vehicles must not stop, even briefly, in this area." },
+  { name: "No U-Turn / No Right Turn / No Left Turn", category: "prohibitory", meaning: "The indicated turn is prohibited." },
+  { name: "No Horn", category: "prohibitory", meaning: "Do not sound the horn (silence zone, e.g. near hospitals or schools)." },
+  { name: "Trucks / Cycles / Pedestrians Prohibited", category: "prohibitory", meaning: "The shown class of road user may not use this road." },
+  { name: "Height / Width / Weight Limit", category: "prohibitory", meaning: "Vehicles exceeding the limit shown may not proceed." },
+  { name: "Left / Right Hand Curve", category: "warning", meaning: "A curve ahead in the direction shown — reduce speed." },
+  { name: "Hairpin Bend", category: "warning", meaning: "Sharp bend ahead, typical on hill roads — slow down and keep left." },
+  { name: "Steep Ascent / Descent", category: "warning", meaning: "Steep gradient ahead — use a suitable gear." },
+  { name: "Narrow Road / Narrow Bridge", category: "warning", meaning: "The road narrows ahead — be ready to give way." },
+  { name: "Slippery Road", category: "warning", meaning: "The surface may be slippery — avoid sudden braking." },
+  { name: "School Ahead", category: "warning", meaning: "Children may be crossing — slow down." },
+  { name: "Pedestrian Crossing", category: "warning", meaning: "Pedestrians may be crossing — be prepared to stop." },
+  { name: "Cattle / Animals", category: "warning", meaning: "Animals may be on the road — slow down." },
+  { name: "Men at Work", category: "warning", meaning: "Road work ahead — reduce speed and follow diversions." },
+  { name: "Railway Crossing (guarded / unguarded)", category: "warning", meaning: "Level crossing ahead — slow down and stop if a train approaches." },
+  { name: "Roundabout / Junction ahead", category: "warning", meaning: "Junction or roundabout ahead — slow down and give way as required." },
+  { name: "Falling Rocks", category: "warning", meaning: "Rocks may fall on the road — drive with extra care." },
+  { name: "Hospital / First Aid", category: "informational", meaning: "Medical facility nearby." },
+  { name: "Parking", category: "informational", meaning: "Parking area available." },
+  { name: "Petrol Pump / Fuel", category: "informational", meaning: "Fuel station ahead." },
+  { name: "Telephone / Eating place / Rest area", category: "informational", meaning: "Facility available ahead." },
+  { name: "Direction / Destination signs", category: "informational", meaning: "Show routes, distances and place names." },
+];
+export const SIGN_TONE: Record<SignCategory, "red" | "blue" | "amber" | "green"> = { mandatory: "blue", prohibitory: "red", warning: "amber", informational: "green" };
