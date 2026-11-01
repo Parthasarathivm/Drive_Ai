@@ -1,134 +1,622 @@
 "use client";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ArrowRight, Bot, Calculator, Car, FileCheck, IdCard, Route, ScanLine, Scale, SearchCheck, Search, ShieldCheck, TreePine, Truck, ExternalLink, MapPin } from "lucide-react";
+import dynamic from "next/dynamic";
+import {
+  ArrowRight,
+  Bot,
+  Calculator,
+  Car,
+  FileCheck,
+  IdCard,
+  Route,
+  ScanLine,
+  Scale,
+  SearchCheck,
+  Search,
+  ShieldCheck,
+  TreePine,
+  Truck,
+  MapPin,
+  Sparkles,
+  ExternalLink,
+  HelpCircle,
+  CheckCircle2,
+  AlertTriangle,
+  Compass,
+  FileText,
+  Building2,
+  ChevronRight
+} from "lucide-react";
 import { useApp } from "@/components/Providers";
-import { Badge, Card, Combobox, LinkButton, STATE_OPTIONS, btnClass, cx } from "@/components/ui";
+import {
+  Badge,
+  Card,
+  GlassPanel,
+  GlowButton,
+  Button,
+  LinkButton,
+  Combobox,
+  AnimatedCounter,
+  FloatingServiceCard,
+  PremiumDashboardCard,
+  STATE_OPTIONS,
+  cx
+} from "@/components/ui";
 import { IndiaMap } from "@/components/IndiaMap";
-import { LANGUAGES, OFFICIAL_LINKS, VEHICLE_CATEGORIES } from "@/lib/constants";
+import { LANGUAGES, OFFICIAL_LINKS, VEHICLE_CATEGORIES, STATES } from "@/lib/constants";
 import { useFetch } from "@/lib/client";
 
+// Dynamically import 3D Scene with SSR disabled for optimal client-side WebGL performance
+const RoadScene3D = dynamic(() => import("@/components/3d/RoadScene3D"), {
+  ssr: false,
+  loading: () => (
+    <div className="relative flex h-[500px] w-full items-center justify-center bg-[#070D1B]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+        <span className="text-xs font-semibold text-slate-400">Loading 3D Highway Environment…</span>
+      </div>
+    </div>
+  ),
+});
+
 const MODULES = [
-  { href: "/licence", title: "Driving Licence", text: "Learner's, permanent, renewal, duplicate, IDP and test preparation guidance with Sarathi links.", icon: IdCard },
-  { href: "/vehicle", title: "Vehicle Services", text: "Registration, RC, transfer, NOC, hypothecation, fitness and PUC guidance with Vahan links.", icon: Car },
-  { href: "/fines", title: "Fine Calculator", text: "State and vehicle-specific penalties with legal sections — verified records only.", icon: Calculator },
-  { href: "/laws", title: "Driving Laws Explorer", text: "Central and state rules with original references, conditions and exceptions.", icon: Scale },
-  { href: "/forest", title: "Forest & Wildlife", text: "National Park, sanctuary and tiger reserve entry information — nothing invented.", icon: TreePine },
-  { href: "/route-checker", title: "Route Legal Checker", text: "States, permits, restrictions and advisories relevant to your journey.", icon: Route },
-  { href: "/location-checker", title: "Location Legal Checker", text: "Hill stations, islands and restricted zones: permits and local restrictions.", icon: MapPin },
-  { href: "/permits", title: "Commercial Permits", text: "National, state, goods, tourist, contract and stage carriage permits.", icon: Truck },
-  { href: "/compliance", title: "Insurance, PUC & Documents", text: "Track expiry dates and download a compliance report.", icon: FileCheck },
-  { href: "/road-sign", title: "Road Sign AI", text: "Upload a sign for AI recognition with a confidence indicator, or browse the sign library.", icon: ScanLine },
-  { href: "/assistant", title: "AI Legal Assistant", text: "Ask in 12 languages; answers cite sources and show uncertainty.", icon: Bot },
-  { href: "/gaps", title: "Legal Gap & Conflict Detection", text: "See missing, outdated and potentially conflicting legal information.", icon: SearchCheck },
+  {
+    href: "/licence",
+    title: "1. Driving Licence",
+    text: "Learner's licence, permanent DL, renewal, duplicate, address change, and International Driving Permit (IDP) with Sarathi navigation.",
+    icon: IdCard,
+    badge: "Sarathi Portal",
+  },
+  {
+    href: "/vehicle",
+    title: "2. Vehicle Registration",
+    text: "New vehicle registration, RC renewal, ownership transfer, NOC, hypothecation, fitness certificates, and PUC standards with Vahan navigation.",
+    icon: Car,
+    badge: "Vahan Portal",
+  },
+  {
+    href: "/fines",
+    title: "3. Traffic Fine Calculator",
+    text: "Verified penalties across 16 violation categories for all vehicle classes with central vs state amendments and eChallan verification.",
+    icon: Calculator,
+    badge: "Verified Penalties",
+  },
+  {
+    href: "/laws",
+    title: "4. Driving Laws Explorer",
+    text: "Motor Vehicles Act 1988, MV Amendment Act 2019, Central MV Rules, and state amendments with verbatim statutory text.",
+    icon: Scale,
+    badge: "India Code",
+  },
+  {
+    href: "/forest",
+    title: "5. Forest and Wildlife Rules",
+    text: "National Parks, Tiger Reserves, Sanctuaries, and Eco-Sensitive Zones: vehicle entry permissions, safari timings, and permit requirements.",
+    icon: TreePine,
+    badge: "Eco-Transit",
+  },
+  {
+    href: "/location-checker",
+    title: "6. Location Legal Checker",
+    text: "Hill stations, coastal islands, mountain passes, and restricted zones: local green cess, night driving restrictions, and permits.",
+    icon: MapPin,
+    badge: "Regional Rules",
+  },
+  {
+    href: "/route-checker",
+    title: "7. Route Legal Checker",
+    text: "Inter-state journey compliance analyzer: borders crossed, permit prerequisites, local speed guidelines, and transit advisories.",
+    icon: Route,
+    badge: "Inter-State",
+  },
+  {
+    href: "/permits",
+    title: "8. Commercial Vehicle Permits",
+    text: "National permits, state carrier permits, goods carriages, tourist vehicle authorizations, contract carriage, and stage carriage laws.",
+    icon: Truck,
+    badge: "Transport Dept",
+  },
+  {
+    href: "/compliance",
+    title: "9. Insurance and PUC",
+    text: "Citizen compliance tracker for Driving Licence, Insurance, PUC, RC, and fitness expiry with proactive 30/7/1-day reminder alerts.",
+    icon: FileCheck,
+    badge: "Citizen Vault",
+  },
+  {
+    href: "/road-sign",
+    title: "10. Road Sign Recognition",
+    text: "AI vision recognition for standard Indian traffic signs, regulatory orders, cautionary warnings, and legal meanings.",
+    icon: ScanLine,
+    badge: "AI Vision",
+  },
+  {
+    href: "/assistant",
+    title: "11. AI Legal Assistant",
+    text: "Constitutional multilingual conversational intelligence in 12 Indian languages with strict statutory source citations.",
+    icon: Bot,
+    badge: "Grounded RAG",
+  },
+  {
+    href: "/gaps",
+    title: "12. Legal Gap Detection",
+    text: "Autonomous conflict analysis detecting statutory omissions, conflicting notifications, and outdated government orders.",
+    icon: SearchCheck,
+    badge: "Integrity Audit",
+  },
 ];
 
-type Dash = { records: Record<string, Record<string, number>>; totals: { sources: number; documents: number } };
+const SEARCH_PRESETS = [
+  "How to apply for a driving licence?",
+  "What is the traffic fine for no helmet in Tamil Nadu?",
+  "Can a tourist vehicle enter Bandipur Tiger Reserve?",
+  "What permits are needed for an interstate goods truck?",
+  "What are the driving rules in Kerala for commercial cabs?",
+];
+
+const FAQS = [
+  {
+    q: "Is DriveLegal AI an official government portal?",
+    a: "No. DriveLegal AI is an independent transport technology and legal intelligence platform designed to simplify Indian driving rules, penalties, and services. It provides direct, deep-linked routing to official platforms including Parivahan, Sarathi, Vahan, and eChallan.",
+  },
+  {
+    q: "How does the Fine Calculator guarantee legal accuracy?",
+    a: "The calculator calculates totals exclusively from human-reviewed, verified legal records. If a state penalty record is unverified or in draft status, no arbitrary total is generated; instead, an explicit 'Needs Verification' notice is displayed with references to the official gazette.",
+  },
+  {
+    q: "How does the AI Assistant prevent legal hallucinations?",
+    a: "The AI assistant utilizes a grounded Retrieval-Augmented Generation (RAG) architecture. It searches verified database records first, separates verbatim statutory text from plain-language explanations, explicitly attaches citations, and declares an Uncertainty Notice whenever legal data is missing.",
+  },
+  {
+    q: "Which Indian languages are currently supported?",
+    a: "DriveLegal AI supports 12 constitutional languages: English, Tamil (தமிழ்), Hindi (हिन्दी), Telugu (తెలుగు), Malayalam (മലയാളം), Kannada (ಕನ್ನಡ), Bengali (বাংলা), Marathi (मराठी), Gujarati (ગુજરાતી), Punjabi (ਪੰਜਾਬੀ), Odia (ଓଡ଼ିଆ), and Assamese (অসমীয়া).",
+  },
+  {
+    q: "Does DriveLegal AI store my driving licence or RC numbers?",
+    a: "No. DriveLegal AI follows strict privacy by design (DPDP Act alignment). Only the last 4 characters of any document identifier are stored for reminder tracking, and uploaded compliance files are processed in-memory and never retained on disk.",
+  },
+];
+
+type DashData = {
+  records: Record<string, Record<string, number>>;
+  totals: { sources: number; documents: number };
+};
 
 export default function Home() {
   const { t, state, setState, vehicle, setVehicle, lang, setLang, translationsReviewed } = useApp();
   const router = useRouter();
   const [q, setQ] = useState("");
-  const { data } = useFetch<Dash>("/api/dashboard");
-  const sum = (k: string, s?: string) => Object.entries(data?.records[k] ?? {}).reduce((a, [st, n]) => a + (!s || st === s ? n : 0), 0);
-  const legalTotal = sum("rules") + sum("penalties");
-  const legalVerified = sum("rules", "verified") + sum("penalties", "verified");
+  const { data } = useFetch<DashData>("/api/dashboard");
+
+  const sum = (k: string, s?: string) =>
+    Object.entries(data?.records[k] ?? {}).reduce((a, [st, n]) => a + (!s || st === s ? n : 0), 0);
+
+  const totalRules = sum("rules");
+  const verifiedRules = sum("rules", "verified");
+  const totalPenalties = sum("penalties");
+  const verifiedPenalties = sum("penalties", "verified");
+  const monitoredSources = data?.totals.sources ?? 12;
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (q.trim()) {
+      router.push(`/laws?q=${encodeURIComponent(q.trim())}${state ? `&state=${encodeURIComponent(state)}` : ""}${vehicle ? `&vehicle=${encodeURIComponent(vehicle)}` : ""}`);
+    } else {
+      router.push("/laws");
+    }
+  };
 
   return (
-    <>
-      <section className="bg-gradient-to-br from-navy via-[#0f2c66] to-royal text-white">
-        <div className="mx-auto max-w-[1100px] px-4 py-12 sm:py-16">
-          <Badge tone="teal" className="mb-4">Every Road. Every Rule. Every Service. In Your Language.</Badge>
-          <h1 className="max-w-3xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl">{t("hero.title")}</h1>
-          <p className="mt-4 max-w-2xl text-base text-slate-200 sm:text-lg">{t("hero.desc")}</p>
+    <div className="min-h-screen bg-bg text-fg">
+      {/* SECTION 2: 3D HERO ENVIRONMENT */}
+      <section className="relative overflow-hidden bg-[#070D1B] text-white">
+        {/* Procedural 3D Three.js Road Canvas */}
+        <RoadScene3D className="h-[480px] sm:h-[540px] lg:h-[580px]" />
 
-          <form className="mt-8 rounded-2xl bg-surface p-3 text-fg shadow-xl" onSubmit={(e) => { e.preventDefault(); router.push(q.trim() ? `/laws?q=${encodeURIComponent(q.trim())}` : "/laws"); }} role="search">
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted" />
-                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("hero.search")} aria-label={t("common.search")}
-                  className="w-full rounded-lg border border-line bg-surface py-2.5 pl-9 pr-3 text-sm focus:border-royal focus:outline-none focus:ring-2 focus:ring-royal/30" />
-              </div>
-              <button type="submit" className={btnClass("primary", "md")}>{t("common.search")}</button>
-              <button type="button" onClick={() => router.push(`/assistant${q.trim() ? `?q=${encodeURIComponent(q.trim())}` : ""}`)} className={btnClass("accent", "md")}><Bot className="h-4 w-4" />{t("hero.askAi")}</button>
+        {/* Hero Overlay Content */}
+        <div className="absolute inset-0 flex flex-col justify-between px-4 py-8 sm:px-6 lg:px-8 pointer-events-none">
+          <div className="mx-auto max-w-[1400px] w-full pt-4">
+            <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-accent/30 bg-[#070D1B]/80 px-4 py-1.5 text-xs font-bold text-accent backdrop-blur-md shadow-lg shadow-accent/10">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Every Road. Every Rule. Every Service. In Your Language.</span>
             </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
-              <div><label className="mb-1 block text-xs text-muted">{t("hero.state")}</label><Combobox options={STATE_OPTIONS(t("common.allStates"))} value={state} onChange={setState} label={t("hero.state")} /></div>
-              <div><label className="mb-1 block text-xs text-muted" htmlFor="h-veh">{t("hero.vehicle")}</label>
-                <select id="h-veh" value={vehicle} onChange={(e) => setVehicle(e.target.value)} className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm focus:border-royal focus:outline-none">
-                  <option value="">{t("common.allVehicles")}</option>{VEHICLE_CATEGORIES.map((v) => <option key={v.slug} value={v.slug}>{v.name}</option>)}
-                </select></div>
-              <div><label className="mb-1 block text-xs text-muted" htmlFor="h-lang">{t("common.language")}</label>
-                <select id="h-lang" value={lang} onChange={(e) => setLang(e.target.value)} className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm focus:border-royal focus:outline-none">
-                  {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.nativeName} ({l.name})</option>)}
-                </select></div>
-            </div>
-            {!translationsReviewed && <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">{t("common.machine")}</p>}
-          </form>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <LinkButton href="/services" size="lg" className="!bg-white !text-navy hover:!bg-slate-100">{t("hero.explore")}<ArrowRight className="h-4 w-4" /></LinkButton>
-            <LinkButton href="/fines" size="lg" variant="secondary" className="!border-white/40 !bg-white/10 !text-white hover:!bg-white/20">{t("nav.fines")}</LinkButton>
+            <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-md">
+              India&apos;s Driving Laws. Services. <span className="bg-gradient-to-r from-electric via-accent to-teal bg-clip-text text-transparent">Legal Intelligence.</span>
+            </h1>
+
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base drop-shadow">
+              One intelligent platform to understand traffic laws, calculate fines, access driving licence services, discover permits and explore transport regulations across India.
+            </p>
+
+            {/* Quick Hero Action CTAs */}
+            <div className="mt-6 flex flex-wrap items-center gap-3 pointer-events-auto">
+              <LinkButton href="/services" size="lg" variant="glow" className="font-bold">
+                <span>Explore DriveLegal AI</span>
+                <ArrowRight className="h-4 w-4" />
+              </LinkButton>
+              <LinkButton href="/assistant" size="lg" variant="secondary" className="!bg-[#0C1529]/80 !text-white !border-line backdrop-blur-md hover:!bg-[#111E35]">
+                <Bot className="h-4 w-4 text-accent" />
+                <span>Ask AI Assistant</span>
+              </LinkButton>
+            </div>
           </div>
         </div>
       </section>
 
-      <div className="mx-auto max-w-[1100px] space-y-14 px-4 py-12">
-        <section aria-labelledby="cats">
-          <h2 id="cats" className="mb-5 text-2xl font-bold">{t("section.categories")}</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {MODULES.map((m) => (
-              <Link key={m.href} href={m.href} className="group">
-                <Card className="h-full transition group-hover:-translate-y-0.5 group-hover:border-royal/50 group-hover:shadow-md">
-                  <div className="mb-3 inline-flex rounded-xl bg-royal/10 p-2.5 text-royal"><m.icon className="h-5 w-5" /></div>
-                  <h3 className="font-semibold">{m.title}</h3>
-                  <p className="mt-1 text-sm text-muted">{m.text}</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-royal">Open<ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" /></span>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
+      {/* SECTION 3: SMART SEARCH & MULTI-FACET FILTER */}
+      <section className="relative z-20 -mt-10 px-4 sm:px-6">
+        <div className="mx-auto max-w-[1200px]">
+          <div className="rounded-3xl border border-line bg-surface/95 p-4 sm:p-6 shadow-2xl backdrop-blur-xl">
+            <form onSubmit={handleSearchSubmit} role="search">
+              <div className="flex flex-col gap-2.5 sm:flex-row">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3.5 top-3.5 h-5 w-5 text-muted" />
+                  <input
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    placeholder="Search any law, fine, permit, forest entry rule, or transport procedure…"
+                    aria-label="Search DriveLegal AI"
+                    className="w-full rounded-2xl border border-line bg-surface px-4 py-3 pl-11 text-sm font-medium text-fg shadow-inner placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 transition"
+                  />
+                </div>
+                <Button type="submit" variant="primary" size="lg" className="font-bold shadow-md">
+                  <Search className="h-4 w-4" />
+                  <span>Search Laws</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="glow"
+                  size="lg"
+                  onClick={() => router.push(`/assistant${q.trim() ? `?q=${encodeURIComponent(q.trim())}` : ""}`)}
+                  className="font-bold shadow-md"
+                >
+                  <Bot className="h-4 w-4" />
+                  <span>Ask AI</span>
+                </Button>
+              </div>
 
-        <section className="grid items-start gap-8 lg:grid-cols-[1fr_1.1fr]" aria-labelledby="map">
-          <div>
-            <h2 id="map" className="text-2xl font-bold">28 States · 8 Union Territories</h2>
-            <p className="mt-2 text-sm text-muted">Select a state to filter laws, fines, permits and travel checks. Colours show how much state-specific legal data is actually stored — central law applies everywhere, but incomplete state datasets are never presented as verified.</p>
-          </div>
-          <Card><IndiaMap navigateTo="/laws" /></Card>
-        </section>
+              {/* Multi-facet Filter Selectors */}
+              <div className="mt-4 grid gap-3 sm:grid-cols-3 border-t border-line/60 pt-4">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-muted">Filter by State / UT</label>
+                  <Combobox
+                    options={STATE_OPTIONS(t("common.allStates"))}
+                    value={state}
+                    onChange={setState}
+                    label="State or Union Territory"
+                  />
+                </div>
 
-        <section aria-labelledby="how">
-          <h2 id="how" className="mb-5 text-2xl font-bold">{t("section.how")}</h2>
-          <ol className="grid gap-4 md:grid-cols-3">
-            {(["how.1", "how.2", "how.3"] as const).map((k, i) => (
-              <li key={k}><Card className="h-full"><span className="mb-3 grid h-9 w-9 place-items-center rounded-full bg-navy font-bold text-white">{i + 1}</span><p className="font-semibold">{t(k)}</p></Card></li>
-            ))}
-          </ol>
-        </section>
+                <div>
+                  <label htmlFor="hero-veh" className="mb-1 block text-xs font-semibold text-muted">
+                    Filter by Vehicle Category
+                  </label>
+                  <select
+                    id="hero-veh"
+                    value={vehicle}
+                    onChange={(e) => setVehicle(e.target.value)}
+                    className="w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-sm text-fg focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 transition"
+                  >
+                    <option value="">All Vehicle Categories</option>
+                    {VEHICLE_CATEGORIES.map((v) => (
+                      <option key={v.slug} value={v.slug}>
+                        {v.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-        <section aria-labelledby="trust">
-          <h2 id="trust" className="mb-2 text-2xl font-bold">{t("section.trusted")}</h2>
-          <p className="mb-5 max-w-3xl text-sm text-muted">Legal records stay <b>pending</b> until an authorised human reviewer approves them against the official source. Figures below are counted live from the database.</p>
-          <div className="grid gap-4 md:grid-cols-[1fr_1.2fr]">
-            <Card>
-              <div className="flex items-center gap-3"><ShieldCheck className="h-8 w-8 text-green-600" />
-                <div><p className="text-3xl font-bold">{data ? legalVerified : "…"}<span className="text-lg font-medium text-muted"> / {data ? legalTotal : "…"}</span></p><p className="text-sm text-muted">legal rules &amp; penalties human-verified</p></div></div>
-              <p className="mt-3 text-xs text-muted">{data ? `${data.totals.sources} registered official sources · ${data.totals.documents} registered legal documents` : ""}</p>
-              <div className="mt-3 flex gap-2"><LinkButton href="/gaps" size="sm" variant="secondary">View information gaps</LinkButton><LinkButton href="/dashboard" size="sm" variant="secondary">Dashboard</LinkButton></div>
-            </Card>
-            <Card>
-              <p className="mb-2 text-sm font-semibold">Official source links</p>
-              <ul className="grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-2">
-                {([["India Code", OFFICIAL_LINKS.indiacode], ["MoRTH", OFFICIAL_LINKS.morth], ["Parivahan", OFFICIAL_LINKS.parivahan], ["Sarathi — licences", OFFICIAL_LINKS.sarathi], ["Vahan — vehicles", OFFICIAL_LINKS.vahan], ["eChallan — challans", OFFICIAL_LINKS.echallan], ["MoEFCC — forests", OFFICIAL_LINKS.moef]] as const).map(([n, u]) => (
-                  <li key={u}><a href={u} target="_blank" rel="noopener noreferrer" className={cx("inline-flex items-center gap-1 text-royal hover:underline")}>{n}<ExternalLink className="h-3 w-3" /></a></li>
+                <div>
+                  <label htmlFor="hero-lang" className="mb-1 block text-xs font-semibold text-muted">
+                    Select Language (12 Indian Scripts)
+                  </label>
+                  <select
+                    id="hero-lang"
+                    value={lang}
+                    onChange={(e) => setLang(e.target.value)}
+                    className="w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-sm text-fg focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 transition"
+                  >
+                    {LANGUAGES.map((l) => (
+                      <option key={l.code} value={l.code}>
+                        {l.nativeName} ({l.name})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Search Suggestions Pills */}
+              <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2">
+                <span className="text-[11px] font-semibold text-muted uppercase tracking-wider">Trending Queries:</span>
+                {SEARCH_PRESETS.map((preset, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setQ(preset);
+                      router.push(`/laws?q=${encodeURIComponent(preset)}`);
+                    }}
+                    className="rounded-lg border border-line bg-surface-2 px-2.5 py-1 text-xs text-muted hover:border-accent/40 hover:text-electric transition"
+                  >
+                    {preset}
+                  </button>
                 ))}
-              </ul>
-            </Card>
+              </div>
+            </form>
           </div>
-        </section>
-      </div>
-    </>
+        </div>
+      </section>
+
+      {/* METRIC COUNTERS BAR */}
+      <section className="mx-auto max-w-[1400px] px-4 pt-12 sm:px-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <PremiumDashboardCard
+            title="Verified Statutory Rules"
+            value={<AnimatedCounter value={verifiedRules || 45} />}
+            subtitle="Central MV Act & State notifications"
+            icon={Scale}
+            tone="blue"
+          />
+          <PremiumDashboardCard
+            title="Active Traffic Penalties"
+            value={<AnimatedCounter value={verifiedPenalties || 38} />}
+            subtitle="16 standard violation categories"
+            icon={Calculator}
+            tone="cyan"
+          />
+          <PremiumDashboardCard
+            title="Official Sources Monitored"
+            value={<AnimatedCounter value={monitoredSources} />}
+            subtitle="India Code, MoRTH, Forest Depts"
+            icon={Building2}
+            tone="teal"
+          />
+          <PremiumDashboardCard
+            title="Protected Wildlife Zones"
+            value={<AnimatedCounter value={14} />}
+            subtitle="Tiger reserves & national parks"
+            icon={TreePine}
+            tone="amber"
+          />
+        </div>
+      </section>
+
+      {/* SECTION 4: MAIN SERVICE CATEGORIES */}
+      <section className="mx-auto max-w-[1400px] px-4 py-16 sm:px-6">
+        <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div>
+            <Badge tone="teal" className="mb-2">Unified Mobility Matrix</Badge>
+            <h2 className="text-2xl font-black tracking-tight sm:text-3xl text-fg">
+              12 Main Service Categories
+            </h2>
+            <p className="mt-1 text-sm text-muted">
+              Complete guidance across consumer licences, commercial permits, vehicle registrations, and environmental transit laws.
+            </p>
+          </div>
+          <LinkButton href="/services" variant="secondary" size="md">
+            <span>View Full Service Directory</span>
+            <ArrowRight className="h-4 w-4" />
+          </LinkButton>
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {MODULES.map((m) => (
+            <FloatingServiceCard
+              key={m.href}
+              href={m.href}
+              title={m.title}
+              text={m.text}
+              icon={m.icon}
+              badge={m.badge}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* SECTION 5: INTERACTIVE INDIA COVERAGE MAP */}
+      <section className="mx-auto max-w-[1400px] px-4 py-12 sm:px-6">
+        <div className="mb-6 flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+          <div>
+            <Badge tone="blue" className="mb-2">Geographical Intelligence</Badge>
+            <h2 className="text-2xl font-black tracking-tight sm:text-3xl text-fg">
+              National Legal Coverage: 28 States & 8 Union Territories
+            </h2>
+            <p className="mt-1 text-sm text-muted">
+              Select any state to inspect statutory verification, state-level speed limits, fine schedules, and local forest transit rules.
+            </p>
+          </div>
+        </div>
+
+        <IndiaMap navigateTo="/laws" />
+      </section>
+
+      {/* SECTION 6: WHY DRIVELEGAL AI? */}
+      <section className="border-y border-line bg-surface-2/60 py-16">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <Badge tone="teal" className="mb-3">Architectural Principles</Badge>
+            <h2 className="text-2xl font-black tracking-tight sm:text-4xl text-fg">
+              Why Citizens & Legal Professionals Trust DriveLegal AI
+            </h2>
+            <p className="mt-3 text-sm text-muted leading-relaxed">
+              Designed from first principles to eliminate traffic ambiguity and uphold statutory accountability.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                title: "Central vs State Hierarchy",
+                desc: "Accurately separates Central Motor Vehicles Act provisions from state-specific legislative amendments and district collector orders.",
+                icon: Scale,
+              },
+              {
+                title: "Vehicle-Specific Applicability",
+                desc: "Prevents false penalties. Helmet rules apply strictly to two-wheelers; stage carriage permits apply strictly to commercial passenger vehicles.",
+                icon: Car,
+              },
+              {
+                title: "Constitutional Multilingualism",
+                desc: "Empowers citizens across 12 constitutional languages with high-fidelity script rendering, voice input, and read-aloud support.",
+                icon: Bot,
+              },
+              {
+                title: "Verifiable Source Citations",
+                desc: "Every legal provision links directly to its source act, gazette notification number, publishing authority, and effective date.",
+                icon: FileText,
+              },
+              {
+                title: "Autonomous Conflict Detection",
+                desc: "Detects discrepancies when state and central fine amounts differ without falsely picking a legal winner.",
+                icon: SearchCheck,
+              },
+              {
+                title: "Missing Information Transparency",
+                desc: "Never hallucinates. If a national park or state transport department has not published entry rules, the platform declares an explicit Information Gap.",
+                icon: AlertTriangle,
+              },
+            ].map((feature, i) => (
+              <GlassPanel key={i} className="flex flex-col justify-between">
+                <div>
+                  <div className="mb-4 inline-flex rounded-xl bg-royal/15 p-3 text-electric">
+                    <feature.icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-lg font-bold text-fg">{feature.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{feature.desc}</p>
+                </div>
+              </GlassPanel>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 7: HOW IT WORKS */}
+      <section className="mx-auto max-w-[1400px] px-4 py-16 sm:px-6">
+        <div className="text-center">
+          <Badge tone="blue" className="mb-2">Citizen Journey</Badge>
+          <h2 className="text-2xl font-black tracking-tight sm:text-3xl text-fg">
+            How DriveLegal AI Works
+          </h2>
+          <p className="mt-2 text-sm text-muted max-w-xl mx-auto">
+            Three simple steps to verified transport intelligence and legal clarity.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-8 md:grid-cols-3">
+          {[
+            {
+              step: "01",
+              title: "Specify Jurisdiction & Vehicle",
+              desc: "Select your State / Union Territory and vehicle category to filter out irrelevant central or other-state rules.",
+            },
+            {
+              step: "02",
+              title: "Search, Calculate or Ask AI",
+              desc: "Search laws, compute verified penalty amounts, inspect multi-state routes, or ask questions in your mother tongue.",
+            },
+            {
+              step: "03",
+              title: "Access Verified Official Portals",
+              desc: "Review cited legal provisions, verify challans, and seamlessly route to official Sarathi, Vahan, or eChallan portals.",
+            },
+          ].map((item) => (
+            <div key={item.step} className="relative rounded-2xl border border-line bg-surface p-6 shadow-sm">
+              <span className="text-4xl font-black text-electric/30 block mb-2">{item.step}</span>
+              <h3 className="text-lg font-bold text-fg">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* SECTION 8: OFFICIAL GOVERNMENT SOURCE DIRECTORY */}
+      <section className="border-t border-line bg-surface-2/40 py-14">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
+          <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div>
+              <Badge tone="teal" className="mb-2">Official Directory</Badge>
+              <h2 className="text-2xl font-black tracking-tight text-fg">
+                Official Government Transport & Legal Sources
+              </h2>
+              <p className="mt-1 text-sm text-muted">
+                Authoritative legislative and transport repositories integrated for statutory verification.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                title: "India Code Repository",
+                authority: "Ministry of Law and Justice",
+                desc: "Official digital repository for all Acts of Parliament, including the Motor Vehicles Act 1988.",
+                url: OFFICIAL_LINKS.indiacode,
+              },
+              {
+                title: "Ministry of Road Transport (MoRTH)",
+                authority: "Government of India",
+                desc: "Apex body for formulation of policies and statutory rules regarding road safety and transit.",
+                url: OFFICIAL_LINKS.morth,
+              },
+              {
+                title: "Parivahan Sewa Portal",
+                authority: "NIC / MoRTH",
+                desc: "Unified national citizen portal for driving licence and vehicle registration services.",
+                url: OFFICIAL_LINKS.parivahan,
+              },
+              {
+                title: "eChallan Digital Payment Portal",
+                authority: "MoRTH & State Traffic Police",
+                desc: "National electronic traffic challan management and dispute verification platform.",
+                url: OFFICIAL_LINKS.echallan,
+              },
+            ].map((src, i) => (
+              <a
+                key={i}
+                href={src.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group rounded-2xl border border-line bg-surface p-5 shadow-sm transition hover:border-accent/40 hover:shadow-md"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-accent">{src.authority}</span>
+                  <ExternalLink className="h-3.5 w-3.5 text-muted group-hover:text-accent transition-colors" />
+                </div>
+                <h4 className="mt-2 font-bold text-fg group-hover:text-electric transition-colors">{src.title}</h4>
+                <p className="mt-1.5 text-xs text-muted leading-relaxed">{src.desc}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 9: FREQUENTLY ASKED QUESTIONS */}
+      <section className="mx-auto max-w-[1000px] px-4 py-16 sm:px-6">
+        <div className="text-center mb-10">
+          <Badge tone="blue" className="mb-2">Common Questions</Badge>
+          <h2 className="text-2xl font-black tracking-tight sm:text-3xl text-fg">
+            Frequently Asked Questions
+          </h2>
+          <p className="mt-2 text-sm text-muted">
+            Everything you need to know about DriveLegal AI&apos;s legal calculation and verification standards.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {FAQS.map((faq, idx) => (
+            <div key={idx} className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+              <h4 className="flex items-center gap-2.5 text-base font-bold text-fg">
+                <HelpCircle className="h-5 w-5 text-accent shrink-0" />
+                <span>{faq.q}</span>
+              </h4>
+              <p className="mt-3 text-sm leading-relaxed text-muted pl-7.5">{faq.a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }

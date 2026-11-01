@@ -1,8 +1,8 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bot, ExternalLink, Mic, Send, Volume2 } from "lucide-react";
+import { Bot, ExternalLink, Mic, Send, Sparkles, Volume2 } from "lucide-react";
 import { useApp } from "@/components/Providers";
-import { Badge, Button, Card, Notice, PageHeader, StatusBadge, inputCls } from "@/components/ui";
+import { Badge, Button, Card, GlassPanel, Notice, PageHeader, StatusBadge, inputCls } from "@/components/ui";
 import { api } from "@/lib/client";
 import { LANGUAGES } from "@/lib/constants";
 
@@ -30,28 +30,97 @@ function AnswerCard({ a, speechCode }: { a: Answer; speechCode: string }) {
     u.lang = speechCode;
     window.speechSynthesis.speak(u);
   };
-  const Row = ({ k, children }: { k: string; children: React.ReactNode }) => <div><p className="text-xs font-semibold uppercase tracking-wide text-muted">{k}</p><div className="mt-0.5 text-sm">{children}</div></div>;
+  const Row = ({ k, children }: { k: string; children: React.ReactNode }) => (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-wider text-cyan-400/80">{k}</p>
+      <div className="mt-1 text-sm">{children}</div>
+    </div>
+  );
   return (
-    <Card className="space-y-4">
+    <GlassPanel className="space-y-4 border-cyan-500/20 shadow-xl">
       <div className="flex flex-wrap items-center gap-2">
-        <Badge tone={a.generatedBy === "retrieval" ? "blue" : "teal"}>{a.generatedBy === "retrieval" ? "Assembled from stored records" : `AI-generated (${a.generatedBy}) from stored records`}</Badge>
-        <Badge>{a.languageName}</Badge>{a.translated && <Badge tone="amber">Machine-translated — not human-reviewed</Badge>}
+        <Badge tone={a.generatedBy === "retrieval" ? "blue" : "teal"}>
+          {a.generatedBy === "retrieval" ? "Assembled from stored records" : `AI-generated (${a.generatedBy}) from stored records`}
+        </Badge>
+        <Badge>{a.languageName}</Badge>
+        {a.translated && <Badge tone="amber">Machine-translated — not human-reviewed</Badge>}
       </div>
       {a.translationNote && <Notice tone="amber">{a.translationNote}</Notice>}
-      <div className="rounded-xl bg-royal/10 p-3"><p className="text-xs font-semibold uppercase tracking-wide text-royal">{L.answer}</p><p className="mt-1 whitespace-pre-wrap text-base font-medium">{a.directAnswer}</p>
-        <Button size="sm" variant="ghost" className="mt-2" onClick={speak}><Volume2 className="h-4 w-4" />Read aloud</Button></div>
-      <div className="grid gap-4 sm:grid-cols-2"><Row k={L.location}>{a.applicableLocation}</Row><Row k={L.vehicle}>{a.vehicleCategory}</Row></div>
-      {a.legalProvision.length > 0 && <Row k={L.provision}><ul className="list-disc pl-5">{a.legalProvision.map((p) => <li key={p}>{p}</li>)}</ul></Row>}
-      {a.originalLegalText.length > 0 && <Row k={L.original}>{a.originalLegalText.map((o) => <blockquote key={o.reference} className="mt-1 border-l-2 border-royal pl-3"><b>{o.reference}</b><br /><span className="italic">{o.text}</span></blockquote>)}</Row>}
-      {a.verifiedInformation.length > 0 && <Row k={L.verified}><ul className="space-y-2">{a.verifiedInformation.map((f, i) => <li key={i} className="rounded-lg border border-line p-2"><div className="flex flex-wrap items-center gap-2"><b>{f.label}</b><StatusBadge status={f.status} /></div><p className="text-muted">{f.value}</p></li>)}</ul></Row>}
-      {a.conditionsAndExceptions.length > 0 && <Row k={L.conditions}><ul className="list-disc space-y-1 pl-5">{a.conditionsAndExceptions.map((c, i) => <li key={i}>{c}</li>)}</ul></Row>}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Row k={L.source}><ul className="space-y-1">{a.officialSources.map((s) => <li key={s.url}><a className="inline-flex items-center gap-1 text-royal hover:underline" href={s.url} target="_blank" rel="noopener noreferrer">{s.name}<ExternalLink className="h-3 w-3" /></a></li>)}</ul></Row>
-        <Row k={L.lastVerified}>{a.lastVerifiedAt ? new Date(a.lastVerifiedAt).toLocaleDateString("en-IN") : "Never — not human-verified"}</Row>
+      <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 backdrop-blur-sm">
+        <p className="text-xs font-bold uppercase tracking-wider text-blue-400">{L.answer}</p>
+        <p className="mt-2 whitespace-pre-wrap text-base font-medium leading-relaxed text-slate-100">{a.directAnswer}</p>
+        <Button size="sm" variant="ghost" className="mt-3 hover:bg-blue-500/20" onClick={speak}>
+          <Volume2 className="h-4 w-4 text-cyan-400" />Read aloud
+        </Button>
       </div>
-      {a.uncertainty.length > 0 && <Notice tone="amber" title={L.uncertainty}><ul className="list-disc space-y-1 pl-5">{a.uncertainty.map((u, i) => <li key={i}>{u}</li>)}</ul></Notice>}
-      <p className="text-xs text-muted">{a.disclaimer}</p>
-    </Card>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Row k={L.location}>{a.applicableLocation}</Row>
+        <Row k={L.vehicle}>{a.vehicleCategory}</Row>
+      </div>
+      {a.legalProvision.length > 0 && (
+        <Row k={L.provision}>
+          <ul className="list-disc space-y-1 pl-5 text-slate-200">
+            {a.legalProvision.map((p) => <li key={p}>{p}</li>)}
+          </ul>
+        </Row>
+      )}
+      {a.originalLegalText.length > 0 && (
+        <Row k={L.original}>
+          {a.originalLegalText.map((o) => (
+            <blockquote key={o.reference} className="mt-2 rounded-r-lg border-l-4 border-cyan-500 bg-surface2/60 p-3">
+              <b className="text-cyan-300">{o.reference}</b><br />
+              <span className="italic text-slate-300">{o.text}</span>
+            </blockquote>
+          ))}
+        </Row>
+      )}
+      {a.verifiedInformation.length > 0 && (
+        <Row k={L.verified}>
+          <ul className="space-y-2">
+            {a.verifiedInformation.map((f, i) => (
+              <li key={i} className="rounded-lg border border-line bg-surface/40 p-2.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <b className="text-slate-100">{f.label}</b>
+                  <StatusBadge status={f.status} />
+                </div>
+                <p className="mt-1 text-slate-300">{f.value}</p>
+              </li>
+            ))}
+          </ul>
+        </Row>
+      )}
+      {a.conditionsAndExceptions.length > 0 && (
+        <Row k={L.conditions}>
+          <ul className="list-disc space-y-1 pl-5 text-slate-300">
+            {a.conditionsAndExceptions.map((c, i) => <li key={i}>{c}</li>)}
+          </ul>
+        </Row>
+      )}
+      <div className="grid gap-4 sm:grid-cols-2 border-t border-line/60 pt-3">
+        <Row k={L.source}>
+          <ul className="space-y-1">
+            {a.officialSources.map((s) => (
+              <li key={s.url}>
+                <a className="inline-flex items-center gap-1 text-cyan-400 hover:text-cyan-300 hover:underline" href={s.url} target="_blank" rel="noopener noreferrer">
+                  {s.name}<ExternalLink className="h-3 w-3" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Row>
+        <Row k={L.lastVerified}>
+          <span className="text-slate-300">{a.lastVerifiedAt ? new Date(a.lastVerifiedAt).toLocaleDateString("en-IN") : "Never — not human-verified"}</span>
+        </Row>
+      </div>
+      {a.uncertainty.length > 0 && (
+        <Notice tone="amber" title={L.uncertainty}>
+          <ul className="list-disc space-y-1 pl-5">
+            {a.uncertainty.map((u, i) => <li key={i}>{u}</li>)}
+          </ul>
+        </Notice>
+      )}
+      <p className="text-xs text-muted border-t border-line/40 pt-2">{a.disclaimer}</p>
+    </GlassPanel>
   );
 }
 
@@ -79,12 +148,9 @@ export default function AssistantPage() {
   }, [lang, state, vehicle]);
 
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect */
     setVoiceOk(!!((window as unknown as Record<string, unknown>).SpeechRecognition || (window as unknown as Record<string, unknown>).webkitSpeechRecognition));
     const p = new URLSearchParams(window.location.search).get("q");
     if (p) ask(p);
-    /* eslint-enable react-hooks/set-state-in-effect */
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
 
@@ -103,21 +169,79 @@ export default function AssistantPage() {
 
   return (
     <>
-      <PageHeader title="DriveLegal AI Assistant" icon={<Bot className="h-5 w-5" />} description="Ask about licences, registration, fines, driving laws, forests, permits and compliance — in any of 12 languages. Answers cite stored records, show verification status and state what is unknown." />
-      <Notice tone="blue" title="How answers are built">Records are retrieved from the database (official-source-linked, human-verified where available), then explained. {msgs.length === 0 && "No AI provider key? The assistant still works in retrieval-only mode."}</Notice>
-      <div className="my-4 flex flex-wrap items-center gap-2"><label htmlFor="al" className="text-sm font-medium">Answer language</label>
-        <select id="al" className={`${inputCls} !w-auto`} value={lang} onChange={(e) => setLang(e.target.value)}>{LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.nativeName} ({l.name})</option>)}</select>
-        <span className="text-xs text-muted">State: {state || "not selected"} · Vehicle: {vehicle || "not selected"}</span></div>
+      <PageHeader 
+        title="DriveLegal AI Assistant" 
+        icon={<Bot className="h-5 w-5 text-cyan-400" />} 
+        description="Ask about licences, registration, fines, driving laws, forests, permits and compliance — in any of 12 languages. Answers cite stored records, show verification status and state what is unknown." 
+      />
+      <Notice tone="blue" title="How answers are built">
+        Records are retrieved from the database (official-source-linked, human-verified where available), then explained. {msgs.length === 0 && "No AI provider key? The assistant still works in retrieval-only mode."}
+      </Notice>
+      
+      <div className="my-4 flex flex-wrap items-center gap-2">
+        <label htmlFor="al" className="text-sm font-medium">Answer language</label>
+        <select id="al" className={`${inputCls} !w-auto`} value={lang} onChange={(e) => setLang(e.target.value)}>
+          {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.nativeName} ({l.name})</option>)}
+        </select>
+        <span className="text-xs text-muted">State: {state || "not selected"} · Vehicle: {vehicle || "not selected"}</span>
+      </div>
+
       <div className="space-y-4" aria-live="polite">
-        {msgs.length === 0 && <Card><p className="mb-3 text-sm font-semibold">Try an example</p><div className="flex flex-wrap gap-2">{EXAMPLES.map((e) => <button key={e} onClick={() => ask(e)} className="rounded-full border border-line px-3 py-1.5 text-left text-sm hover:bg-surface2">{e}</button>)}</div></Card>}
-        {msgs.map((m, i) => m.role === "user" ? <div key={i} className="ml-auto max-w-xl rounded-2xl rounded-tr-sm bg-royal px-4 py-2.5 text-sm text-white">{m.text}</div> : m.role === "error" ? <Notice key={i} tone="red">{m.text}</Notice> : <AnswerCard key={i} a={m.data} speechCode={speech} />)}
-        {busy && <Card><p className="text-sm text-muted">Searching records and preparing an answer…</p></Card>}
+        {msgs.length === 0 && (
+          <GlassPanel className="p-5">
+            <div className="flex items-center gap-2 text-sm font-semibold text-cyan-300 mb-3">
+              <Sparkles className="h-4 w-4" /> Try a statutory example question
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {EXAMPLES.map((e) => (
+                <button 
+                  key={e} 
+                  onClick={() => ask(e)} 
+                  className="rounded-full border border-line bg-surface2/60 px-3.5 py-1.5 text-left text-sm text-slate-200 transition hover:border-cyan-500/50 hover:bg-cyan-500/10"
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          </GlassPanel>
+        )}
+
+        {msgs.map((m, i) => m.role === "user" ? (
+          <div key={i} className="ml-auto max-w-xl rounded-2xl rounded-tr-sm bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg">
+            {m.text}
+          </div>
+        ) : m.role === "error" ? (
+          <Notice key={i} tone="red">{m.text}</Notice>
+        ) : (
+          <AnswerCard key={i} a={m.data} speechCode={speech} />
+        ))}
+
+        {busy && (
+          <GlassPanel className="animate-pulse p-4">
+            <p className="text-sm text-cyan-300">Searching official statutory database and synthesizing verified guidance…</p>
+          </GlassPanel>
+        )}
         <div ref={endRef} />
       </div>
-      <form className="sticky bottom-3 mt-4 flex gap-2 rounded-2xl border border-line bg-surface p-2 shadow-lg" onSubmit={(e) => { e.preventDefault(); ask(text); }}>
-        <input className={inputCls} value={text} onChange={(e) => setText(e.target.value)} placeholder="Ask a question…" aria-label="Your question" maxLength={500} />
-        {voiceOk && <Button type="button" variant={listening ? "danger" : "secondary"} onClick={toggleVoice} aria-label="Voice input" title={`Voice input (${speech})`}><Mic className="h-4 w-4" /></Button>}
-        <Button type="submit" loading={busy} disabled={!text.trim()}><Send className="h-4 w-4" /><span className="hidden sm:inline">Ask</span></Button>
+
+      <form className="sticky bottom-3 mt-4 flex gap-2 rounded-2xl border border-cyan-500/20 bg-surface/90 p-2 shadow-2xl backdrop-blur-md" onSubmit={(e) => { e.preventDefault(); ask(text); }}>
+        <input 
+          className={inputCls} 
+          value={text} 
+          onChange={(e) => setText(e.target.value)} 
+          placeholder="Ask a question across Indian transport law…" 
+          aria-label="Your question" 
+          maxLength={500} 
+        />
+        {voiceOk && (
+          <Button type="button" variant={listening ? "danger" : "secondary"} onClick={toggleVoice} aria-label="Voice input" title={`Voice input (${speech})`}>
+            <Mic className="h-4 w-4" />
+          </Button>
+        )}
+        <Button type="submit" loading={busy} disabled={!text.trim()}>
+          <Send className="h-4 w-4" />
+          <span className="hidden sm:inline">Ask</span>
+        </Button>
       </form>
     </>
   );

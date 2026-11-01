@@ -3,45 +3,69 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --bg: #f4f6fb;
+  --bg: #f8fafc;
+  --bg-secondary: #edf2f7;
   --surface: #ffffff;
-  --surface-2: #f8fafc;
-  --fg: #0b1b3a;
-  --muted: #55657f;
-  --line: #e2e8f0;
-  --navy: #0a1f44;
-  --royal: #1e4fd8;
-  --accent: #0e90a8;
+  --surface-2: #f1f5f9;
+  --surface-3: #e2e8f0;
+  --fg: #070d1b;
+  --fg-secondary: #475569;
+  --muted: #64748b;
+  --line: rgba(148, 163, 184, 0.28);
+  --navy: #0c1529;
+  --royal: #2563eb;
+  --electric: #3b82f6;
+  --accent: #22d3ee;
+  --teal: #14b8a6;
+  --glow: 0 0 25px rgba(37, 99, 235, 0.15);
+  --glass-border: rgba(148, 163, 184, 0.2);
+  --card-shadow: 0 10px 30px -10px rgba(7, 13, 27, 0.08);
 }
 
 .dark {
-  --bg: #0a1020;
-  --surface: #121a2c;
-  --surface-2: #17213a;
-  --fg: #e8eefb;
-  --muted: #a0aec8;
-  --line: #26334f;
-  --navy: #0a1f44;
-  --royal: #6c97ff;
-  --accent: #2dd4ee;
+  --bg: #070d1b;
+  --bg-secondary: #0c1529;
+  --surface: #111e35;
+  --surface-2: #182846;
+  --surface-3: #1e3357;
+  --fg: #f8fafc;
+  --fg-secondary: #a7b4cc;
+  --muted: #8292ab;
+  --line: rgba(148, 163, 184, 0.16);
+  --navy: #070d1b;
+  --royal: #2563eb;
+  --electric: #3b82f6;
+  --accent: #22d3ee;
+  --teal: #14b8a6;
+  --glow: 0 0 35px rgba(34, 211, 238, 0.16);
+  --glass-border: rgba(148, 163, 184, 0.16);
+  --card-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6);
 }
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-bg-secondary: var(--bg-secondary);
   --color-surface: var(--surface);
   --color-surface2: var(--surface-2);
+  --color-surface3: var(--surface-3);
   --color-fg: var(--fg);
+  --color-fg-secondary: var(--fg-secondary);
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-navy: var(--navy);
   --color-royal: var(--royal);
+  --color-electric: var(--electric);
   --color-accent: var(--accent);
-  --font-sans: "Noto Sans", "Inter", system-ui, -apple-system, "Segoe UI", "Noto Sans Devanagari", "Noto Sans Tamil", "Noto Sans Telugu",
-    "Noto Sans Malayalam", "Noto Sans Kannada", "Noto Sans Bengali", "Noto Sans Gujarati", "Noto Sans Gurmukhi", "Noto Sans Oriya", sans-serif;
+  --color-teal: var(--teal);
+  --font-sans: "Inter", "Noto Sans", system-ui, -apple-system, "Segoe UI",
+    "Noto Sans Devanagari", "Noto Sans Tamil", "Noto Sans Telugu",
+    "Noto Sans Malayalam", "Noto Sans Kannada", "Noto Sans Bengali",
+    "Noto Sans Gujarati", "Noto Sans Gurmukhi", "Noto Sans Oriya", sans-serif;
 }
 
 html {
   color-scheme: light;
+  scroll-behavior: smooth;
 }
 html.dark {
   color-scheme: dark;
@@ -52,29 +76,74 @@ body {
   color: var(--fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
 :focus-visible {
-  outline: 2px solid var(--royal);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Glassmorphic Cyber Panels */
+.dl-glass {
+  background: rgba(17, 30, 53, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--card-shadow);
+}
+.light .dl-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.dl-glow-cyan {
+  box-shadow: 0 0 25px rgba(34, 211, 238, 0.22);
+}
+
+.dl-glow-blue {
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.25);
+}
+
+.dl-glow-teal {
+  box-shadow: 0 0 25px rgba(20, 184, 166, 0.25);
 }
 
 @keyframes dl-pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
+  50% { opacity: 0.4; }
 }
 .dl-skeleton {
   animation: dl-pulse 1.4s ease-in-out infinite;
-  background: var(--line);
+  background: var(--surface-2);
   border-radius: 0.5rem;
 }
 
 @keyframes dl-slide {
-  from { transform: translateY(8px); opacity: 0; }
+  from { transform: translateY(10px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 .dl-toast {
-  animation: dl-slide 0.2s ease-out;
+  animation: dl-slide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+.dl-float {
+  animation: float-gentle 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @media print {

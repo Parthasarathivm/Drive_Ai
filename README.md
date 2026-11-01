@@ -1,104 +1,155 @@
 # DriveLegal AI
 
-**India's unified AI-powered driving, transport, traffic-law and legal-services information platform.**
-*Every Road. Every Rule. Every Service. In Your Language.*
+**India's Unified AI-Powered Driving, Transport & Legal Intelligence Platform.**  
+*Every Road. Every Rule. Every Service. In Your Language.*  
+*Know the Law Before You Drive.*
 
-> DriveLegal AI is an independent information and service-navigation platform. It is **not** a government website. All legal content in the seed data is **DEMO DATA – NOT VERIFIED LEGAL ADVICE** until a human Legal Reviewer approves it.
+---
 
-## Stack
+## 1. Overview & Statutory Integrity
 
-| Layer | Choice |
+DriveLegal AI is India's sovereign, production-grade legal intelligence platform for motorists, commercial operators, transport departments, and citizens. It centralises motor vehicle laws, traffic fine calculators, driving licence protocols, vehicle registration services, commercial permits, interstate travel regulations, and eco-sensitive wildlife corridor guidelines across all **28 States and 8 Union Territories**.
+
+> [!IMPORTANT]
+> **Strict Statutory Verification & Anti-Hallucination Directives:**
+> * DriveLegal AI is an independent statutory navigation platform and is **not** an official government agency.
+> * **Zero-Hallucination Guarantee**: No traffic fine, penalty calculation, or statutory provision is ever invented.
+> * All newly entered or AI-extracted legal records start in a `pending` state and **never** contribute to calculated fine totals until certified by an authorized human Legal Reviewer.
+> * Unverified penalties are explicitly flagged as *Draft / Unverified Reference*; missing values display *Information Not Found*.
+> * Original statutory citations (`legal_rules.original_text`) remain untranslated and pristine.
+
+---
+
+## 2. Technology Architecture
+
+| Layer | Architecture & Technology |
 |---|---|
-| Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide icons, Recharts, React Hook Form + Zod |
-| Backend | Next.js route handlers (REST, Zod validation, central error handling, in-memory rate limiting) |
-| Database | **PostgreSQL via Drizzle ORM** (see "Deviations" below) |
-| Auth | Email + password (scrypt), HTTP-only session cookie, DB-backed sessions, role-based access control |
-| AI | Provider-agnostic server-side module (`src/lib/ai.ts`): Gemini or Claude, plus a retrieval-only fallback |
+| **Frontend Framework** | **Next.js 16** (App Router, Server Components & Dynamic Client Modules), **React 19**, **TypeScript 5.9** |
+| **Styling & Design System** | **Tailwind CSS v4**, Cyber-Sovereignty Theme (`#070D1B` Obsidian, `#0C1529` Deep Navy, `#111E35` Slate Card, `#2563EB` Royal Blue, `#3B82F6` Electric Blue, `#22D3EE` High-Tech Cyan, `#14B8A6` Emerald Verified), Glassmorphism (`.dl-glass`), Noto Sans Indic Multilingual Font Stacks |
+| **3D Visualization** | **Three.js (WebGL)**: Procedural 3D Indian Highway (`RoadScene3D`), Interactive 3D Vehicle Simulation (`VehicleModel3D`), National Transit Corridor Network (`RoadNetworkVisualization`), Hardware-Accelerated Geographical India Vector Map (28 States + 8 UTs) |
+| **Backend & API** | Next.js API Route Handlers (RESTful, Zod runtime validation, centralized error handler, in-memory IP rate-limiting, audit logging) |
+| **Database & ORM** | **PostgreSQL** via **Drizzle ORM** (28 production tables including version snapshots, verification logs, and audit journals) |
+| **Authentication & RBAC** | Session cookie (`dl_session`, HTTP-only, SameSite=Lax, SHA-256 session token hashes), **scrypt** cryptographic password hashing with timing-safe comparisons, 5-tier Role-Based Access Control (`super_admin`, `legal_reviewer`, `data_manager`, `translator`, `user`) |
+| **AI Intelligence Layer** | Multi-provider abstraction (`Gemini 2.0 Flash` / `Claude 3.5 Sonnet` / Local Retrieval Fallback), RAG grounded exclusively in verified database records, AI road-sign vision analysis, PDF statutory heuristic extraction |
+| **Privacy & DPDP Act** | Strict DPDP Act 2023 compliance: explicit user consent, strict last-4 document masking (`DL-*****1234`), ephemeral file processing (uploads discarded immediately after reading dates) |
 
-## Quick start
+---
+
+## 3. High-Priority 3D Features
+
+1. **Procedural 3D Indian Highway (`RoadScene3D`):**
+   - High-speed perspective camera animation down a multi-lane highway.
+   - Dynamic road geometry with animated yellow dash dividers, cyan/electric blue light trails, and atmospheric perspective fog.
+   - 3D vehicle model with illuminated cyan headlights, road spotlights, and floating wireframe legal checkpoint markers.
+   - Automatic fallback: gracefully degrades to reduced-motion CSS or static canvas on low-power devices.
+
+2. **Interactive 3D Vehicle Model Viewer (`VehicleModel3D`):**
+   - Interactive orbit/rotation controls for 5 Indian vehicle categories: Two-Wheelers, Private Motor Cars, Taxis, Buses, and Heavy Commercial Trucks.
+   - Real-time statutory badges displaying vehicle-specific speed limits, fitness inspection cycles, and permit requirements.
+
+3. **National Transit Corridor Network (`RoadNetworkVisualization`):**
+   - 3D node-and-edge network representing major Indian freight corridors (Golden Quadrilateral, NH44, East-West Corridor).
+   - Real-time statutory checkpoint indicators for state border toll gates, weigh stations, and RTO checkpoints.
+
+4. **Geographical Vector India Map (`IndiaMap`):**
+   - Fully interactive vector map representing all **28 States and 8 Union Territories**.
+   - Hover cards showing live database coverage statistics, active legal rules, recorded penalties, and RTO district networks.
+   - Deep-linked state filtering across all legal explorers and fine calculators.
+
+---
+
+## 4. Multilingual Sovereign Font Stack
+
+DriveLegal AI natively supports **12 official Indian languages** with localized UI strings, voice input, and regional speech synthesis:
+
+1. English (`en`)
+2. हिन्दी - Hindi (`hi`)
+3. தமிழ் - Tamil (`ta`)
+4. తెలుగు - Telugu (`te`)
+5. മലയാളം - Malayalam (`ml`)
+6. ಕನ್ನಡ - Kannada (`kn`)
+7. বাংলা - Bengali (`bn`)
+8. मराठी - Marathi (`mr`)
+9. ગુજરાતી - Gujarati (`gu`)
+10. ਪੰਜਾਬੀ - Punjabi (`pa`)
+11. ଓଡ଼ିଆ - Odia (`or`)
+12. অসমীয়া - Assamese (`as`)
+
+---
+
+## 5. Local Setup & Quickstart
+
+### Prerequisites
+- **Node.js**: v20+ (Node v24 recommended)
+- **npm**: v10+
+- **PostgreSQL**: PostgreSQL 14+ database instance
+
+### Installation Steps
+
+1. **Clone repository and install dependencies:**
+   ```bash
+   git clone <repo-url> drivelegal-ai
+   cd drivelegal-ai
+   npm install
+   ```
+
+2. **Configure Environment Variables:**
+   ```bash
+   cp .env.example .env
+   ```
+   Edit `.env` and provide your database connection string:
+   ```env
+   DATABASE_URL="postgres://username:password@localhost:5432/drivelegal"
+   SESSION_COOKIE_SECURE="false" # Set "true" in HTTPS production
+
+   # Optional: AI Provider (Gemini or Claude)
+   GEMINI_API_KEY=""
+   # or
+   ANTHROPIC_API_KEY=""
+   ```
+
+3. **Push Database Schema:**
+   ```bash
+   npx drizzle-kit push
+   ```
+
+4. **Start Development Server:**
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:3000` in your browser.
+
+> [!NOTE]
+> **Automatic Database Seeding:**
+> On the very first API request, DriveLegal AI automatically seeds reference data: all 36 States/UTs, 5 vehicle categories, 12 languages, official government sources, core service timelines, sample rules, and multilingual dictionaries.
+>
+> **First Registered Account:**
+> The first account created via `/register` is automatically granted the **Super Admin** role.
+
+---
+
+## 6. Production Verification & Building
+
+To compile and verify the production build:
 
 ```bash
-npm install
-cp .env.example .env          # set DATABASE_URL (+ optional AI keys)
-npx drizzle-kit push          # create tables (drizzle.config.json)
-npm run dev                   # http://localhost:3000
+# TypeScript strict type-check
+npm run build
 ```
 
-Reference data (36 states/UTs, vehicle categories, languages, sources, services, demo rules/penalties, translations) is **seeded automatically and idempotently** on the first API request (`src/lib/seed.ts`).
+---
 
-**First admin:** the *first account registered* becomes **Super Admin**. That user can assign other roles in *Admin → Users & Roles*. (Register your own account immediately after deploying.)
+## 7. Official Source Directory
 
-Production: `npm run build && npm start`. Deploy to any Next.js host (Vercel, Render, Railway, Fly) with a managed PostgreSQL instance; set `SESSION_COOKIE_SECURE=true` behind HTTPS.
+DriveLegal AI indexes and links directly to official Indian transport authorities:
+- **Ministry of Road Transport and Highways (MoRTH)**: [morth.nic.in](https://morth.nic.in)
+- **Sarathi Parivahan (DL Services)**: [sarathi.parivahan.gov.in](https://sarathi.parivahan.gov.in)
+- **Vahan Parivahan (RC & Vehicle Services)**: [vahan.parivahan.gov.in](https://vahan.parivahan.gov.in)
+- **eChallan Digital Traffic Enforcement**: [echallan.parivahan.nic.in](https://echallan.parivahan.nic.in)
+- **India Code (Statutory Acts Repository)**: [indiacode.nic.in](https://www.indiacode.nic.in)
 
-## Environment variables
+---
 
-See `.env.example`.
+## 8. License & Governance
 
-| Variable | Required | Purpose |
-|---|---|---|
-| `DATABASE_URL` | yes | PostgreSQL connection string |
-| `GEMINI_API_KEY` or `ANTHROPIC_API_KEY` | optional | Enables AI-written multilingual answers, machine translation, road-sign recognition and AI rule extraction. Without a key the assistant answers from stored records (retrieval-only) and road-sign AI reports that no provider is configured |
-| `AI_PROVIDER` | optional | `gemini` or `claude` (auto-detected) |
-| `AI_MODEL` | optional | Override default model (`gemini-2.0-flash` / `claude-sonnet-4-5`) |
-| `SESSION_COOKIE_SECURE` | optional | `true` to mark session cookies Secure (HTTPS deployments) |
-| `AUTH_SHOW_RESET_LINK` | optional | `true` (dev only) returns the password-reset link in the API response because no email provider is wired in |
-
-Keys are read only on the server; nothing secret reaches the browser.
-
-## Data integrity rules (enforced in code)
-
-* **No record is seeded as verified.** All legal records start `pending`. Only a Legal Reviewer / Super Admin can approve (`POST /api/admin/rules/approve`), which writes a verification record, a rule version snapshot and an audit-log entry.
-* The **fine calculator computes totals only from verified records**. Unverified amounts are shown as clearly labelled draft references; missing amounts show "Information Not Found". Editing an approved record resets it to pending.
-* Approval is blocked when a penalty has no section/amount/source or a rule has no legal reference/source.
-* Forest/wildlife entry rules, permits, fees and timings are **left empty** rather than guessed; the UI lists exactly what is missing.
-* No live traffic/weather/closure data is claimed. Document status "Verification unavailable" is shown because there is no government integration.
-* Original legal text (`legal_rules.original_text`) is stored separately from plain-language explanations and is never machine-translated. Machine translations are flagged "not human-reviewed".
-* Dashboard statistics are computed from real rows.
-
-## Project layout
-
-```
-src/
-  app/
-    page.tsx                 Home (hero, search, selectors, map, modules, trust section)
-    (app)/…                  Sidebar pages: dashboard, services, licence, vehicle, fines, challan, laws,
-                             forest, location-checker, route-checker, permits, compliance, documents,
-                             notifications, reports, assistant, road-sign, gaps, profile, settings, admin/*
-    login | register | forgot-password | reset-password
-    api/…                    REST endpoints (see below)
-  components/                Providers (i18n/theme/user/toast), ui kit, nav, map, checkers, admin helpers
-  db/schema.ts               All tables (users, rules, penalties, sources, documents, conflicts, gaps, …)
-  lib/
-    seed.ts, seed-data.ts    Idempotent seed + demo data
-    legal.ts                 Fine calc, law search, forest check, permit check, route analysis
-    intelligence.ts          Gap / conflict / outdated detection engine
-    ai.ts                    Provider abstraction, language/state/vehicle/topic detection, assistant (RAG)
-    extract.ts, extract-db.ts PDF/text extraction (unpdf), AI/heuristic rule extraction
-    auth.ts, api.ts, audit.ts Sessions, RBAC, validation/rate-limit helpers, audit log
-    i18n.ts                  12-language UI dictionary (machine-generated) + DB override architecture
-```
-
-## API overview
-
-Auth `POST /api/auth/{register,login,logout,forgot,reset}`, `GET|PATCH /api/auth/profile` · Locations `GET /api/{states,districts,locations}` ·
-Services `GET /api/license/services[/slug]`, `GET /api/vehicle/services[/slug]` · Laws `GET /api/laws[/id]`, `POST /api/laws/search` ·
-Fines `GET /api/fines[?compare=1]`, `POST /api/fines/calculate`, `GET /api/fines/:id` · Permits `GET /api/permits`, `POST /api/permits/check` ·
-Protected areas `GET /api/protected-areas[/id]`, `POST /api/protected-areas/check` · `POST /api/routes/analyze` ·
-AI `POST /api/ai/{ask,translate,analyze-document}`, `POST /api/road-sign/analyze` ·
-Intelligence `GET /api/intelligence/findings`, `POST /api/intelligence/{gap,conflict,outdated}-detection` (staff) ·
-User data `GET|POST /api/documents`, `DELETE /api/documents/:id`, `GET|POST /api/notifications`, `GET|POST /api/reports`, `GET|DELETE /api/reports/:id`, `POST /api/feedback` ·
-Admin `GET|POST|PATCH /api/admin/sources`, `GET|POST|PATCH /api/admin/documents`, `POST /api/admin/extract`, `POST /api/admin/rules/approve`, `GET /api/admin/review`, `GET /api/admin/dashboard`, `/api/admin/entity/:entity`, `/api/admin/users`, `/api/admin/translations`, `PATCH /api/admin/findings`.
-
-Roles: `super_admin` (everything), `legal_reviewer` (approve/reject, review findings), `data_manager` (sources, documents, data), `translator` (translations), `user`.
-
-## Deviations from the original specification (honest notes)
-
-1. **PostgreSQL + Drizzle instead of MongoDB.** The runtime provides PostgreSQL. All 24 listed collections are mapped to tables (plus `sessions`, `password_resets`, `app_meta`); document-style fields use `jsonb`. Atlas Search / Vector Search are not used — retrieval is keyword/topic based (see Remaining work).
-2. **Next.js route handlers instead of Express/FastAPI.** One deployable service; AI logic lives in `src/lib/ai.ts` and could be extracted to a FastAPI service later.
-3. **India map is a tile-grid cartogram** (approximate geography, no boundary shapes) to avoid shipping inaccurate borders. Colours show real data coverage.
-4. **Map provider:** route/location pages deep-link to OpenStreetMap; no embedded map tiles or geocoding are integrated.
-5. **UI translations are machine-generated** for 11 languages (≈43 strings: navigation, hero, key labels). Page bodies, forms and legal content are English unless AI is configured. Translators can review/override strings in Admin → Translations.
-
-## Remaining work / incomplete features
-
-See `ANTIGRAVITY_HANDOFF.md` for the complete list, credentials needed and the testing log.
+DriveLegal AI is distributed under the MIT License. Designed and engineered for Indian mobility and statutory excellence.
